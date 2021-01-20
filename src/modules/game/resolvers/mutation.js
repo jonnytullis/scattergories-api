@@ -16,7 +16,7 @@ module.exports.createGame = (_, { userId, gameName = '' }) => {
 
     GameDAO.add(game)
 
-    gamesSubscribers.forEach(fn => fn())
+    gamesSubscribers().forEach(fn => fn())
 
     return game
 }
