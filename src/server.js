@@ -1,44 +1,10 @@
 const {
     ApolloServer,
-    gql,
     ApolloError,
     PubSub
 } = require('apollo-server')
-
 const { GameDAO, UserDAO } = require('./dao')
-
-const typeDefs = gql`
-    type Game {
-        id: ID!
-        name: String
-        host: User!
-        players: [User!]!
-        diceValue: String
-    }
-
-    type User {
-        id: ID! # TODO Add authorization so users can only see their own user ID
-        name: String! # This is their display name
-    }
-
-    type Query {
-        games: [Game!]!
-        game(id: ID!): Game!
-        users: [User!]!
-    }
-
-    type Mutation {
-        createUser(name: String): User!, # createUser needs to be done before anything else
-        updateUser(userId: ID!, name: String!): User!
-        createGame(userId: ID!, gameName: String): Game!
-        joinGame(gameId: ID!, userId: ID!): Game!
-        leaveGame(gameId: ID!, userId: ID!): Game!
-    }
-    
-    type Subscription {
-        games: [Game!]!
-    }
-`
+const typeDefs = require('./typedefs')
 
 function generateGameId() {
     return Math.random().toString(36).slice(2, 8).toUpperCase()
@@ -142,7 +108,11 @@ const resolvers = {
 }
 
 const pubsub = new PubSub()
-const server = new ApolloServer({ typeDefs, resolvers, context: { pubsub } })
+const server = new ApolloServer({
+    typeDefs,
+    resolvers,
+    context: { pubsub }
+})
 
 server.listen().then(({ url }) => {
     console.log(`🚀 Server ready at ${url}`)
