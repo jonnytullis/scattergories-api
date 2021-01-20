@@ -5,11 +5,6 @@ module.exports = gql`
         id: ID! # TODO Add authorization so users can only see their own user ID
         name: String! # display name
     }
-    
-    extend type Game {
-        host: User!
-        players: [User!]!
-    }
 
     extend type Query {
         users: [User!]!

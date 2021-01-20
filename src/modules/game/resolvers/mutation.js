@@ -56,6 +56,19 @@ module.exports.joinGame = (_, { gameId, userId }) => {
     return game
 }
 
+module.exports.rollDice = (_, { gameId }) => {
+    let game = GameDAO.setDiceValue(gameId, getRandomDiceValue())
+    if (!game) {
+        throw new ApolloError(`Game ID ${gameId} not found`, '404')
+    }
+    return game
+}
+
 function generateGameId() {
     return Math.random().toString(36).slice(2, 8).toUpperCase()
+}
+
+function getRandomDiceValue() {
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    return alphabet[Math.floor(Math.random() * alphabet.length)]
 }

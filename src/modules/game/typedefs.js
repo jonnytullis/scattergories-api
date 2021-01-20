@@ -4,6 +4,8 @@ module.exports = gql`
     type Game {
         id: ID!
         name: String
+        host: User!
+        players: [User!]!
         diceValue: String
     }
 
@@ -16,6 +18,7 @@ module.exports = gql`
         createGame(userId: ID!, gameName: String): Game!
         joinGame(gameId: ID!, userId: ID!): Game!
         leaveGame(gameId: ID!, userId: ID!): Game!
+        rollDice(gameId: ID): Game!
     }
 
     extend type Subscription {
