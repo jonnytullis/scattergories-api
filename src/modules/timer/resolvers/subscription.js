@@ -13,7 +13,7 @@ module.exports.timer = {
         const channel = getChannelFromId(gameId)
 
         timerChannelCallbacks[channel] = () => {
-            const timer = createTimer(game.timerSeconds)
+            const timer = createTimer(game.settings.timerSeconds)
             let interval = setInterval(() => {
                 if (timer.remaining <= 0 || stoppedChannels[channel] === true) {
                     clearInterval(interval)
