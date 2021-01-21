@@ -1,6 +1,6 @@
 const { ApolloError } = require('apollo-server')
 const { GameDAO, UserDAO } = require('../../../dao')
-const { gamesSubscribers } = require('./subscription')
+const subscriptions = require('./subscription')
 
 module.exports.createGame = (_, { userId, gameName = '' }) => {
     const host = UserDAO.get(userId)
@@ -15,8 +15,7 @@ module.exports.createGame = (_, { userId, gameName = '' }) => {
     }
 
     GameDAO.add(game)
-
-    gamesSubscribers().forEach(fn => fn())
+    subscriptions.games.getSubscribers().forEach(fn => fn()) // Publish the list of games to EVERY client in subscribers
 
     return game
 }
