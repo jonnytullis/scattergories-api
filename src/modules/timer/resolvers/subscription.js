@@ -48,8 +48,7 @@ const getChannelFromId = (id) => `${id}_TIMER_CHANNEL`
 /*
  * Creates and returns a new timer
  */
-const DEFAULT_SECONDS = 180
-function createTimer(seconds = DEFAULT_SECONDS) {
+function createTimer(seconds) {
     return {
         totalSeconds: seconds,
         remaining: seconds,
