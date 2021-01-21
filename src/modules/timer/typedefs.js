@@ -13,7 +13,7 @@ module.exports = gql`
     }
     
     extend type Mutation {
-        setTimer(gameId: ID!, seconds: Int): Timer
         startTimer(gameId: ID!): Timer
+        stopTimer(gameId: ID!): Timer
     }
 `

@@ -1,26 +1,53 @@
 const { ApolloError } = require('apollo-server')
 const { GameDAO } = require('../../../dao')
 
-const timerSubscribers = []
+const stoppedChannels = {} // Map of stopped channels. { channel: true } indicates the callback should stop publishing immediately
+const timerChannelCallbacks = {} // Map of open channels and their callback functions
 module.exports.timer = {
     subscribe: (_, { gameId }, { pubsub }) => {
         const game = GameDAO.get(gameId)
         if (!game) {
             throw new ApolloError(`Game ID ${gameId} not found`, '404')
         }
-        const channel = `${gameId}_TIMER_CHANNEL` // People in the same game will receive publishes at the same time
-        const callback = () => {
-            pubsub.publish(channel, { timer: createTimer() })
+
+        const channel = getChannelFromId(gameId)
+
+        timerChannelCallbacks[channel] = () => {
+            const timer = createTimer(game.timerSeconds)
+            let interval = setInterval(() => {
+                if (timer.remaining <= 0 || stoppedChannels[channel] === true) {
+                    clearInterval(interval)
+                    stoppedChannels[channel] = false
+                    return
+                }
+                pubsub.publish(channel, { timer: JSON.parse(JSON.stringify(timer)) })
+                timer.remaining--
+            }, 1000)
         }
 
-        timerSubscribers.push(callback)
-
-        setTimeout(callback, 0) // Send this subscriber the data right away
         return pubsub.asyncIterator(channel)
     },
-    getSubscribers: () => timerSubscribers
+    startTimer: (gameId) => {
+        const channel = getChannelFromId(gameId)
+        const callback = timerChannelCallbacks[channel]
+        if (callback instanceof Function) {
+            callback()
+        }
+    },
+    stopTimer: (gameId) => {
+        const channel = getChannelFromId(gameId)
+        stoppedChannels[channel] = true
+    }
 }
 
+/*
+ * Returns a timer channel key given an ID
+ */
+const getChannelFromId = (id) => `${id}_TIMER_CHANNEL`
+
+/*
+ * Creates and returns a new timer
+ */
 const DEFAULT_SECONDS = 180
 function createTimer(seconds = DEFAULT_SECONDS) {
     return {
@@ -28,3 +55,4 @@ function createTimer(seconds = DEFAULT_SECONDS) {
         remaining: seconds,
     }
 }
+

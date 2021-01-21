@@ -7,6 +7,7 @@ module.exports = gql`
         host: User!
         players: [User!]!
         diceValue: String
+        timerSeconds: Int
     }
 
     extend type Query {
