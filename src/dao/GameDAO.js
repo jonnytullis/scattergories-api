@@ -10,7 +10,8 @@ const GameDAO = {
             game.diceValue = value
         }
         return game
-    }
+    },
+    getPrompts: () => require('./prompts.json'),
 }
 
 Object.freeze(GameDAO) // Singleton for now to preserve state. This will change when using a database

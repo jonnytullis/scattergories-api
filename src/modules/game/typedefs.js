@@ -12,15 +12,18 @@ module.exports = gql`
     
     type Settings {
         timerSeconds: Int!
+        numRounds: Int!
+        promptsPerRound: Int!
     }
 
     extend type Query {
         games: [Game!]!
         game(id: ID!): Game!
+        
     }
 
     extend type Mutation {
-        createGame(userId: ID!): Game!
+        createGame(userId: ID!, gameName: String): Game!
         joinGame(gameId: ID!, userId: ID!): Game!
         leaveGame(gameId: ID!, userId: ID!): Game!
         rollDice(gameId: ID): Game!

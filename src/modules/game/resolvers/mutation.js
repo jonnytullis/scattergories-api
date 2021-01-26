@@ -2,14 +2,14 @@ const { ApolloError } = require('apollo-server')
 const { GameDAO, UserDAO } = require('../../../dao')
 const subscriptions = require('./subscription')
 
-module.exports.createGame = (_, { userId }) => {
+module.exports.createGame = (_, { userId, gameName }) => {
     const host = UserDAO.get(userId)
     if (!host) {
         throw new ApolloError('User ID not found', '404')
     }
     const game = {
         id: generateGameId(),
-        name: `${host.name}'s Game`,
+        name: gameName || `${host.name}'s Game`,
         host,
         players: [],
         settings: generateDefaultSettings()
@@ -75,6 +75,8 @@ function getRandomDiceValue() {
 
 function generateDefaultSettings() {
     return {
-        timerSeconds: 180
+        timerSeconds: 180,
+        numRounds: 3,
+        promptsPerRound: 12
     }
 }
