@@ -18,7 +18,10 @@ module.exports.createGame = (_, { userId, gameName }) => {
     GameDAO.add(game)
     subscriptions.games.publishGames()
 
-    return game
+    return {
+        success: true,
+        gameId: game.id
+    }
 }
 
 module.exports.leaveGame = (gameId, userId) => {
@@ -36,7 +39,9 @@ module.exports.leaveGame = (gameId, userId) => {
 
     game.players.splice(playerIndex, 1)
 
-    return game
+    return {
+        success: true
+    }
 }
 
 module.exports.joinGame = (_, { gameId, userId }) => {
@@ -54,7 +59,10 @@ module.exports.joinGame = (_, { gameId, userId }) => {
     game.players.push(user)
     subscriptions.players.publishParticipants(gameId)
 
-    return game
+    return {
+        success: true,
+        gameId: game.gameId
+}
 }
 
 module.exports.newLetter = (_, { gameId }) => {
@@ -63,7 +71,10 @@ module.exports.newLetter = (_, { gameId }) => {
     if (!game) {
         throw new ApolloError(`Game ID ${gameId} not found`, '404')
     }
-    return game
+    return {
+        success: true,
+        letter: game.letter
+    }
 }
 
 function generateGameId() {
