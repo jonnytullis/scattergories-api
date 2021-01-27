@@ -18,7 +18,6 @@ module.exports = gql`
 
     ########## GQL ##########
     extend type Query {
-        games: [Game!]!
         game: Game!
         players(id: ID!): [User!]!
     }
