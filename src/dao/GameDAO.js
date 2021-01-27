@@ -4,10 +4,10 @@ const GameDAO = {
     add: item => games.push(item),
     get: id => games.find(game => game.id === id),
     getAll: () => JSON.parse(JSON.stringify(games)),
-    setDiceValue: (gameId, value) => {
+    setLetter: (gameId, value) => {
         const game = games.find(game => game.id === gameId)
         if (game) {
-            game.diceValue = value
+            game.letter = value
         }
         return game
     },

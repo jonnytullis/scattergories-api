@@ -6,10 +6,10 @@ module.exports = gql`
         name: String
         host: User!
         players: [User!]!
-        diceValue: String
+        letter: String
         settings: Settings!
     }
-    
+
     type Settings {
         timerSeconds: Int!
         numRounds: Int!
@@ -18,18 +18,19 @@ module.exports = gql`
 
     extend type Query {
         games: [Game!]!
-        game(id: ID!): Game!
-        
+        players(id: ID!): [User!]!
     }
 
     extend type Mutation {
         createGame(userId: ID!, gameName: String): Game!
         joinGame(gameId: ID!, userId: ID!): Game!
         leaveGame(gameId: ID!, userId: ID!): Game!
-        rollDice(gameId: ID): Game!
+        newLetter(gameId: ID): Game!
     }
 
     extend type Subscription {
         games: [Game!]!
+        players(gameId: ID!): [User!]!
+        letter(gameId: ID!): String!
     }
 `

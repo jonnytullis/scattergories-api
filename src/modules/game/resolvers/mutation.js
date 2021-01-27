@@ -16,7 +16,7 @@ module.exports.createGame = (_, { userId, gameName }) => {
     }
 
     GameDAO.add(game)
-    subscriptions.games.getSubscribers().forEach(fn => fn()) // Publish the list of games to EVERY client in subscribers
+    subscriptions.games.publishGames()
 
     return game
 }
@@ -52,12 +52,14 @@ module.exports.joinGame = (_, { gameId, userId }) => {
     }
 
     game.players.push(user)
+    subscriptions.players.publishParticipants(gameId)
 
     return game
 }
 
-module.exports.rollDice = (_, { gameId }) => {
-    let game = GameDAO.setDiceValue(gameId, getRandomDiceValue())
+module.exports.newLetter = (_, { gameId }) => {
+    let game = GameDAO.setLetter(gameId, getRandomLetter())
+    subscriptions.games.publishGames(gameId)
     if (!game) {
         throw new ApolloError(`Game ID ${gameId} not found`, '404')
     }
@@ -68,7 +70,7 @@ function generateGameId() {
     return Math.random().toString(36).slice(2, 8).toUpperCase()
 }
 
-function getRandomDiceValue() {
+function getRandomLetter() {
     const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
     return alphabet[Math.floor(Math.random() * alphabet.length)]
 }
