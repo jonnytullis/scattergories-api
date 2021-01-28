@@ -7,7 +7,6 @@ module.exports.createUser = (_, { name = '' }) => {
     }
 
     UserDAO.add(user)
-
     return user
 }
 

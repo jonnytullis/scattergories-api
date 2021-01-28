@@ -11,7 +11,12 @@ module.exports = gql`
     }
 
     extend type Mutation {
-        createUser(name: String): User! # createUser needs to be done before anything else
+        createUser(name: String): CreateUserPayload!
         updateUser(userId: ID!, name: String!): User!
+    }
+    
+    type CreateUserPayload {
+        id: ID!
+        name: String!
     }
 `

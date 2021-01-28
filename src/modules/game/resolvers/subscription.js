@@ -50,6 +50,7 @@ module.exports.players = {
         }
         const channel = channels.participants(gameId)
         subscribers.players[channel] = () => pubsub.publish(channel, { players: game.players })
+        setTimeout(subscribers.players[channel], 0) // Give data to the subscriber immediately
         return pubsub.asyncIterator(channel)
     },
     // Publishes a game to anyone subscribed to a given gameId

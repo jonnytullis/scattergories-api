@@ -20,7 +20,7 @@ module.exports.createGame = (_, { userId, gameName }) => {
 
     return {
         success: true,
-        gameId: game.id
+        game: game
     }
 }
 
@@ -90,6 +90,6 @@ function generateDefaultSettings() {
     return {
         timerSeconds: 180,
         numRounds: 3,
-        promptsPerRound: 12
+        numPrompts: 12
     }
 }
