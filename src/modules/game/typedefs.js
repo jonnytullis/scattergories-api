@@ -10,6 +10,10 @@ module.exports = gql`
         letter: String
         settings: Settings!
     }
+    type User {
+        id: ID!
+        name: String! # display name
+    }
     type Settings {
         timerSeconds: Int!
         numRounds: Int!
@@ -23,8 +27,8 @@ module.exports = gql`
         players(id: ID!): [User!]!
     }
     extend type Mutation {
-        createGame(userId: ID!, gameName: String): CreateGamePayload!
-        joinGame(gameId: String!, userId: ID!): JoinGamePayload!
+        createGame(hostName: String!, gameName: String): CreateGamePayload!
+        joinGame(gameId: String!, userName: String!): JoinGamePayload!
         leaveGame(gameId: String!, userId: ID!): LeaveGamePayload!
         newLetter(gameId: String): NewLetterPayload!
     }
@@ -40,7 +44,7 @@ module.exports = gql`
     }
     type JoinGamePayload {
         success: Boolean!
-        gameId: ID
+        game: Game!
     }
     type LeaveGamePayload {
         success: Boolean!
