@@ -33,8 +33,7 @@ module.exports = gql`
         newLetter(gameId: String): NewLetterPayload!
     }
     extend type Subscription {
-        players(gameId: String!): [User!]!
-        letter(gameId: String!): String!
+        game(gameId: String!): Game!
     }
     
     ########## PAYLOADS ##########
