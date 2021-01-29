@@ -18,7 +18,6 @@ const server = new ApolloServer({
     typeDefs,
     modules: [
         require('./modules/game'),
-        require('./modules/user'),
         require('./modules/timer')
     ]
 })
