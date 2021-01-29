@@ -27,7 +27,7 @@ module.exports = gql`
         players(id: ID!): [User!]!
     }
     extend type Mutation {
-        createGame(hostName: String!, gameName: String): CreateGamePayload!
+        createGame(hostName: String!, gameName: String!): CreateGamePayload!
         joinGame(gameId: String!, userName: String!): JoinGamePayload!
         leaveGame(gameId: String!, userId: ID!): LeaveGamePayload!
         newLetter(gameId: String): NewLetterPayload!

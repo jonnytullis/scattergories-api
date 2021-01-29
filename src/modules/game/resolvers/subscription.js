@@ -2,14 +2,12 @@ const { ApolloError } = require('apollo-server')
 const { GameDAO } = require('../../../dao')
 
 const channels = {
-    letter: (gameId) => `${gameId}_LETTER_CHANNEL`,
-    participants: (gameId) => `${gameId}_PARTICIPANTS_CHANNEL`
+    game: (gameId) => `${gameId}_GAME_CHANNEL`,
 }
 
 const subscribers = {
     games: [],
-    letter: {},
-    players: {}
+    game: {}
 }
 
 module.exports.games = {
@@ -23,40 +21,19 @@ module.exports.games = {
     publishGames: () => { subscribers.games.forEach((fn) => fn()) } // Publish the games available to EVERY subscriber in the list
 }
 
-module.exports.letter = {
+module.exports.game = {
     subscribe: (_, { gameId }, { pubsub }) => {
         const game = GameDAO.get(gameId)
         if (!game) {
             throw new ApolloError(`Game ID ${gameId} not found`, '404')
         }
-        const channel = channels.letter(gameId)
-        subscribers.letter[channel] = () => pubsub.publish(channel, { letter: game.letter })
+        const channel = channels.game(gameId)
+        subscribers.game[channel] = () => pubsub.publish(channel, { game })
         return pubsub.asyncIterator(channel)
     },
-    publishLetter: (gameId) => {
-        const channel = channels.letter(gameId)
-        const callback = subscribers.letter[channel]
-        if (callback instanceof Function) {
-            callback()
-        }
-    }
-}
-
-module.exports.players = {
-    subscribe: (_, { gameId }, { pubsub }) => {
-        const game = GameDAO.get(gameId)
-        if (!game) {
-            throw new ApolloError(`Game ID ${gameId} not found`, '404')
-        }
-        const channel = channels.participants(gameId)
-        subscribers.players[channel] = () => pubsub.publish(channel, { players: game.players })
-        setTimeout(subscribers.players[channel], 0) // Give data to the subscriber immediately
-        return pubsub.asyncIterator(channel)
-    },
-    // Publishes a game to anyone subscribed to a given gameId
-    publishParticipants: (gameId) => {
-        const channel = channels.participants(gameId)
-        const callback = subscribers.players[channel]
+    publishGame: (gameId) => {
+        const channel = channels.game(gameId)
+        const callback = subscribers.game[channel]
         if (callback instanceof Function) {
             callback()
         }

@@ -38,7 +38,7 @@ module.exports.joinGame = (_, { gameId, userName }) => {
     }
 
     game.players.push(user)
-    subscriptions.players.publishParticipants(gameId)
+    subscriptions.game.publishGame(gameId)
 
     return {
         success: true,
@@ -47,19 +47,12 @@ module.exports.joinGame = (_, { gameId, userName }) => {
 }
 
 module.exports.leaveGame = (gameId, userId) => {
-    // Find the game
-    const game = GameDAO.get(gameId)
-    if (!game) {
-        throw new ApolloError(`Game ID ${gameId} not found`, '404')
+    try {
+        GameDAO.removePlayer(gameId, userId)
+    } catch(e) {
+        throw new ApolloError(e.message, '404')
     }
-
-    // Remove the player from the game player list
-    const playerIndex = game.players.findIndex(user => user.id === userId)
-    if (playerIndex < 0) {
-        throw new ApolloError(`Player not found in Game with ID ${gameId}`, '404')
-    }
-    game.players.splice(playerIndex, 1)
-
+    subscriptions.game.publishGame(gameId)
     return {
         success: true
     }
@@ -70,7 +63,7 @@ module.exports.newLetter = (_, { gameId }) => {
     if (!game) {
         throw new ApolloError(`Game ID ${gameId} not found`, '404')
     }
-    subscriptions.games.publishGames(gameId)
+    subscriptions.game.publishGames(gameId)
     return {
         success: true,
         letter: game.letter
@@ -82,7 +75,7 @@ function generateGameId() {
 }
 
 function generateUserId() {
-    return Math.random().toString(36).slice(2).toUpperCase()
+    return Math.random().toString(36).slice(2)
 }
 
 function getRandomLetter() {
