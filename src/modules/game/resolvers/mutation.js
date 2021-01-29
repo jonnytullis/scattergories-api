@@ -10,6 +10,7 @@ module.exports.createGame = (_, { hostName, gameName }) => {
 
     const game = {
         id: generateGameId(),
+        letter: getRandomLetter(),
         name: gameName || `${host.name}'s Game`,
         host,
         players: [],
@@ -21,7 +22,8 @@ module.exports.createGame = (_, { hostName, gameName }) => {
 
     return {
         success: true,
-        game
+        game,
+        user: host
     }
 }
 
@@ -42,7 +44,8 @@ module.exports.joinGame = (_, { gameId, userName }) => {
 
     return {
         success: true,
-        game
+        game,
+        user
     }
 }
 
