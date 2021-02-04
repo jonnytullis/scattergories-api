@@ -12,8 +12,8 @@ module.exports.createGame = (_, { hostName, gameName }) => {
         id: generateGameId(),
         letter: getRandomLetter(),
         name: gameName || `${host.name}'s Game`,
-        host,
-        players: [],
+        hostId: host.id,
+        players: [host],
         settings: generateDefaultSettings()
     }
 
@@ -21,7 +21,6 @@ module.exports.createGame = (_, { hostName, gameName }) => {
     subscriptions.games.publishGames()
 
     return {
-        success: true,
         game,
         user: host
     }
@@ -43,7 +42,6 @@ module.exports.joinGame = (_, { gameId, userName }) => {
     subscriptions.game.publishGame(gameId)
 
     return {
-        success: true,
         game,
         user
     }
@@ -68,7 +66,6 @@ module.exports.newLetter = (_, { gameId }) => {
     }
     subscriptions.game.publishGames(gameId)
     return {
-        success: true,
         letter: game.letter
     }
 }

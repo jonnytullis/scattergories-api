@@ -3,9 +3,9 @@ const { gql } = require('apollo-server')
 module.exports = gql`
     ########## OBJECTS ##########
     type Game {
-        id: String!
+        id: String! # Intentionally NOT ID because game ID will always be a 6 letter string
         name: String
-        host: User!
+        hostId: ID!
         players: [User!]!
         letter: String
         settings: Settings!
@@ -37,12 +37,10 @@ module.exports = gql`
     
     ########## PAYLOADS ##########
     type CreateGamePayload {
-        success: Boolean!
         game: Game!
         user: User!
     }
     type JoinGamePayload {
-        success: Boolean!
         game: Game!
         user: User!
     }
@@ -50,7 +48,6 @@ module.exports = gql`
         success: Boolean!
     }
     type NewLetterPayload {
-        success: Boolean!
         letter: String!
     }
 `
