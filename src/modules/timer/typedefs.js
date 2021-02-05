@@ -9,7 +9,7 @@ module.exports = gql`
         timer(gameId: String!): Timer!
     }
     extend type Mutation {
-        startTimer(gameId: ID!): Timer
-        stopTimer(gameId: ID!): Timer
+        startTimer(gameId: String!, userId: ID!): Timer
+        stopTimer(gameId: String!, userId: ID!): Timer
     }
 `

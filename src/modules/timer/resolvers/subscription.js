@@ -20,8 +20,8 @@ module.exports.timer = {
                     stoppedChannels[channel] = false
                     return
                 }
-                pubsub.publish(channel, { timer: JSON.parse(JSON.stringify(timer)) })
                 timer.remaining--
+                pubsub.publish(channel, { timer: JSON.parse(JSON.stringify(timer)) })
             }, 1000)
         }
 

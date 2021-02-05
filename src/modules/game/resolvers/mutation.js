@@ -59,12 +59,15 @@ module.exports.leaveGame = (gameId, userId) => {
     }
 }
 
-module.exports.newLetter = (_, { gameId }) => {
-    let game = GameDAO.setLetter(gameId, getRandomLetter())
+module.exports.newLetter = async (_, { gameId, userId }) => {
+    let game = GameDAO.get(gameId)
     if (!game) {
         throw new ApolloError(`Game ID ${gameId} not found`, '404')
     }
-    subscriptions.game.publishGames(gameId)
+    if (game.hostId === userId) {
+        await GameDAO.setLetter(game.id, getRandomLetter())
+        subscriptions.game.publishGames(gameId)
+    }
     return {
         letter: game.letter
     }

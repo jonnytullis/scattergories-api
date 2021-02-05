@@ -29,7 +29,7 @@ module.exports = gql`
         createGame(hostName: String!, gameName: String!): CreateGamePayload!
         joinGame(gameId: String!, userName: String!): JoinGamePayload!
         leaveGame(gameId: String!, userId: ID!): LeaveGamePayload!
-        newLetter(gameId: String): NewLetterPayload!
+        newLetter(gameId: String!, userId: ID!): NewLetterPayload!
     }
     extend type Subscription {
         game(gameId: String!): Game!

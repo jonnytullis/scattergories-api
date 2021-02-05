@@ -4,18 +4,22 @@ const subscriptions = require('./subscription')
 
 // FIXME Add authorization so only the host can start/stop the timer
 
-module.exports.startTimer = (_, { gameId }) => {
+module.exports.startTimer = (_, { gameId, userId }) => {
     const game = GameDAO.get(gameId)
     if (!game) {
         throw new ApolloError(`Game ID ${gameId} not found`, '404')
     }
-    subscriptions.timer.startTimer(gameId)
+    if (game.hostId === userId) {
+        subscriptions.timer.startTimer(gameId)
+    }
 }
 
-module.exports.stopTimer = (_, { gameId }) => {
+module.exports.stopTimer = (_, { gameId, userId }) => {
     const game = GameDAO.get(gameId)
     if (!game) {
         throw new ApolloError(`Game ID ${gameId} not found`, '404')
     }
-    subscriptions.timer.stopTimer(gameId)
+    if (game.hostId === userId) {
+        subscriptions.timer.stopTimer(gameId)
+    }
 }
