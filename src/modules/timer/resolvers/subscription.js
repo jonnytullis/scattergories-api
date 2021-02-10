@@ -1,8 +1,7 @@
 const { ApolloError } = require('apollo-server')
 const { GameDAO } = require('../../../dao')
 
-const stoppedChannels = {} // Map of stopped channels. { channel: true } indicates the callback should stop publishing immediately
-const timerChannelCallbacks = {} // Map of channels and their callback functions
+const channelTimers = {} // Map of active timers. Key=channel, value=timer
 module.exports.timer = {
     subscribe: (_, { gameId }, { pubsub }) => {
         const game = GameDAO.get(gameId)
@@ -12,31 +11,62 @@ module.exports.timer = {
 
         const channel = getChannelFromId(gameId)
 
-        timerChannelCallbacks[channel] = () => {
-            const timer = createTimer(game.settings.timerSeconds)
-            let interval = setInterval(() => {
-                if (timer.remaining <= 0 || stoppedChannels[channel] === true) {
-                    clearInterval(interval)
-                    stoppedChannels[channel] = false
-                    return
-                }
-                timer.remaining--
-                pubsub.publish(channel, { timer: JSON.parse(JSON.stringify(timer)) })
-            }, 1000)
+        const publishTimer = () => {
+            pubsub.publish(channel, { timer: JSON.parse(JSON.stringify(channelTimers[channel].timer)) })
         }
+
+        if (!channelTimers[channel]) {
+            channelTimers[channel] = {
+                timer: createTimer(game.settings?.timerSeconds || 180),
+                interval: null,
+                start: () => {
+                    if (!channelTimers[channel].timer) {
+                        channelTimers[channel].timer = createTimer(game.settings?.timerSeconds || 180)
+                    }
+
+                    channelTimers[channel].timer.isRunning = true
+                    publishTimer()
+                    channelTimers[channel].interval = setInterval(() => {
+                        if (channelTimers[channel].timer.remaining <= 0) {
+                            clearInterval(channelTimers[channel].interval)
+                            channelTimers[channel].timer.isRunning = false
+                            publishTimer()
+                            return
+                        }
+                        channelTimers[channel].timer.remaining--
+                        publishTimer()
+                    }, 1000)
+                },
+                pause: () => {
+                    channelTimers[channel].timer.isRunning = false
+                    clearInterval(channelTimers[channel].interval)
+                    publishTimer()
+                },
+                reset: () => {
+                    channelTimers[channel].timer.isRunning = false
+                    clearInterval(channelTimers[channel].interval)
+                    channelTimers[channel].timer = createTimer(game.settings?.timerSeconds || 180)
+                    publishTimer()
+                },
+            }
+        }
+
+        // Send a the timer right away
+        publishTimer(channel)
 
         return pubsub.asyncIterator(channel)
     },
     startTimer: (gameId) => {
         const channel = getChannelFromId(gameId)
-        const callback = timerChannelCallbacks[channel]
-        if (callback instanceof Function) {
-            callback()
-        }
+        channelTimers[channel].start()
     },
-    stopTimer: (gameId) => {
+    pauseTimer: (gameId) => {
         const channel = getChannelFromId(gameId)
-        stoppedChannels[channel] = true
+        channelTimers[channel].pause()
+    },
+    resetTimer: (gameId) => {
+        const channel = getChannelFromId(gameId)
+        channelTimers[channel].reset()
     }
 }
 
@@ -54,6 +84,7 @@ function createTimer(seconds) {
     return {
         totalSeconds: seconds,
         remaining: seconds,
+        isRunning: false,
     }
 }
 

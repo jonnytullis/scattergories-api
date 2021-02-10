@@ -14,12 +14,22 @@ module.exports.startTimer = (_, { gameId, userId }) => {
     }
 }
 
-module.exports.stopTimer = (_, { gameId, userId }) => {
+module.exports.pauseTimer = (_, { gameId, userId }) => {
     const game = GameDAO.get(gameId)
     if (!game) {
         throw new ApolloError(`Game ID ${gameId} not found`, '404')
     }
     if (game.hostId === userId) {
-        subscriptions.timer.stopTimer(gameId)
+        subscriptions.timer.pauseTimer(gameId)
+    }
+}
+
+module.exports.resetTimer = (_, { gameId, userId }) => {
+    const game = GameDAO.get(gameId)
+    if (!game) {
+        throw new ApolloError(`Game ID ${gameId} not found`, '404')
+    }
+    if (game.hostId === userId) {
+        subscriptions.timer.resetTimer(gameId)
     }
 }
