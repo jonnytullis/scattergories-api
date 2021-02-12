@@ -14,14 +14,14 @@ const typeDefs = gql`
 
 const pubsub = new PubSub()
 const server = new ApolloServer({
-    context: { pubsub },
-    typeDefs,
-    modules: [
-        require('./modules/game'),
-        require('./modules/timer')
-    ]
+  context: { pubsub },
+  typeDefs,
+  modules: [
+    require('./modules/game'),
+    require('./modules/timer')
+  ]
 })
 
 server.listen().then(({ url }) => {
-    console.log(`🚀 Server ready at ${url}`)
+  console.log(`🚀 Server ready at ${url}`)
 })
