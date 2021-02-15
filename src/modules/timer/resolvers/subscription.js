@@ -51,8 +51,10 @@ module.exports.timer = {
       }
     }
 
-    // Send a the timer right away
-    publishTimer(channel)
+    // Send a the timer right away (on next tick)
+    setTimeout(() => {
+      publishTimer(channel)
+    }, 0)
 
     return pubsub.asyncIterator(channel)
   },
