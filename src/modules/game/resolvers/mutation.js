@@ -47,8 +47,9 @@ module.exports.joinGame = (_, { gameId, userName }) => {
   }
 }
 
-module.exports.leaveGame = (gameId, userId) => {
+module.exports.leaveGame = (_, { gameId, userId }) => {
   try {
+    // FIXME if the userId === hostId, delete game
     GameDAO.removePlayer(gameId, userId)
   } catch(e) {
     throw new ApolloError(e.message, '404')
