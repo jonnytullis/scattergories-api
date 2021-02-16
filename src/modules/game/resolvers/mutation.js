@@ -1,8 +1,7 @@
 const { ApolloError } = require('apollo-server')
 const { GameDAO } = require('../../../dao')
-const subscriptions = require('./subscription')
 
-module.exports.createGame = (_, { hostName, gameName }) => {
+module.exports.createGame = (_, { hostName, gameName }, { pubsub }) => {
   const host = {
     id: generateUserId(),
     name: hostName
@@ -18,7 +17,7 @@ module.exports.createGame = (_, { hostName, gameName }) => {
   }
 
   GameDAO.add(game)
-  subscriptions.games.publishGames()
+  pubsub.publish('GAME_CREATED', { games: GameDAO.getAll() })
 
   return {
     game,
@@ -26,7 +25,7 @@ module.exports.createGame = (_, { hostName, gameName }) => {
   }
 }
 
-module.exports.joinGame = (_, { gameId, userName }) => {
+module.exports.joinGame = (_, { gameId, userName }, { pubsub }) => {
   const user = {
     id: generateUserId(),
     name: userName
@@ -39,7 +38,7 @@ module.exports.joinGame = (_, { gameId, userName }) => {
   }
 
   game.players.push(user)
-  subscriptions.game.publishGame(gameId)
+  pubsub.publish('GAME_CHANGED', { game })
 
   return {
     game,
@@ -47,27 +46,27 @@ module.exports.joinGame = (_, { gameId, userName }) => {
   }
 }
 
-module.exports.leaveGame = (_, { gameId, userId }) => {
+module.exports.leaveGame = (_, { gameId, userId }, { pubsub }) => {
   try {
     // FIXME if the userId === hostId, delete game
     GameDAO.removePlayer(gameId, userId)
   } catch(e) {
     throw new ApolloError(e.message, '404')
   }
-  subscriptions.game.publishGame(gameId)
+  pubsub.publish('GAME_CHANGED')
   return {
     success: true
   }
 }
 
-module.exports.newLetter = async (_, { gameId, userId }) => {
+module.exports.newLetter = async (_, { gameId, userId }, { pubsub }) => {
   let game = GameDAO.get(gameId)
   if (!game) {
     throw new ApolloError(`Game ID ${gameId} not found`, '404')
   }
   if (game.hostId === userId) {
     await GameDAO.setLetter(game.id, getRandomLetter())
-    subscriptions.game.publishGames(gameId)
+    pubsub.publish('GAME_CHANGED', { game })
   }
   return {
     letter: game.letter
