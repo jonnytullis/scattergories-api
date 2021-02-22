@@ -7,28 +7,18 @@ module.exports.games = {
   }
 }
 
-module.exports.game = {
+module.exports.gameUpdated = {
   subscribe: withFilter(
     (_, { gameId }, { pubsub }) => {
       const game = GameDAO.get(gameId)
       if (!game) {
         throw new ApolloError(`Game ID ${gameId} not found`, '404')
       }
-      return pubsub.asyncIterator([ 'GAME_CHANGED' ])
+      return pubsub.asyncIterator([ 'GAME_UPDATED' ])
     },
-    (payload, variables) => payload?.game?.id === variables?.gameId
-  )
-}
-
-module.exports.gameEnded = {
-  subscribe: withFilter(
-    (_, { gameId }, { pubsub }) => {
-      const game = GameDAO.get(gameId)
-      if (!game) {
-        throw new ApolloError(`Game ID ${gameId} not found`, '404')
-      }
-      return pubsub.asyncIterator([ 'GAME_ENDED' ])
-    },
-    (payload, variables) => payload?.gameEnded?.gameId === variables?.gameId
+    (payload, variables) => {
+      return payload?.gameUpdated?.game?.id === variables?.gameId ||
+        payload?.gameUpdated?.gameEnded?.gameId === variables?.gameId
+    }
   )
 }

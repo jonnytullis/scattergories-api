@@ -32,8 +32,7 @@ module.exports = gql`
         newLetter(gameId: String!, userId: ID!): NewLetterPayload!
     }
     extend type Subscription {
-        game(gameId: String!): Game!
-        gameEnded(gameId: String!): GameEndedPayload!
+        gameUpdated(gameId: String!): GameSubscriptionPayload!
     }
     
     ########## PAYLOADS ##########
@@ -44,6 +43,10 @@ module.exports = gql`
     type GameEndedPayload {
         gameId: String!
         message: String
+    }
+    type GameSubscriptionPayload {
+        game: Game
+        gameEnded: GameEndedPayload
     }
     type JoinGamePayload {
         game: Game!

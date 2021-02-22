@@ -39,7 +39,7 @@ module.exports.joinGame = (_, { gameId, userName }, { pubsub }) => {
   }
 
   game.players.push(user)
-  pubsub.publish('GAME_CHANGED', { game })
+  pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
 
   return {
     game,
@@ -52,11 +52,11 @@ module.exports.leaveGame = (_, { gameId, userId }, { pubsub }) => {
   if (game?.hostId === userId) {
     GameDAO.delete(gameId)
     timerSubscriptions.deleteTimer(gameId)
-    const message = 'Game ended by host'
-    pubsub.publish('GAME_ENDED', { gameEnded: { gameId, message } })
+    const gameEnded = { gameId, message: 'Game ended by host' }
+    pubsub.publish('GAME_UPDATED', { gameUpdated: { gameEnded } })
   } else {
     GameDAO.removePlayer(gameId, userId)
-    pubsub.publish('GAME_CHANGED', { game })
+    pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
   }
   return {
     success: true
@@ -70,7 +70,7 @@ module.exports.newLetter = async (_, { gameId, userId }, { pubsub }) => {
   }
   if (game.hostId === userId) {
     await GameDAO.setLetter(game.id, getRandomLetter())
-    pubsub.publish('GAME_CHANGED', { game })
+    pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
   }
   return {
     letter: game.letter
