@@ -1,7 +1,7 @@
 const { ApolloError } = require('apollo-server')
 const { GameDAO } = require('../../../dao')
 
-const channelTimers = {} // Map of active timers. Key=channel, value=timer
+const timers = {} // Map of active timers. Key=channel, value=timer
 module.exports.timer = {
   subscribe: (_, { gameId }, { pubsub }) => {
     const game = GameDAO.get(gameId)
@@ -12,40 +12,40 @@ module.exports.timer = {
     const channel = getChannelFromId(gameId)
 
     const publishTimer = () => {
-      pubsub.publish(channel, { timer: JSON.parse(JSON.stringify(channelTimers[channel].timer)) })
+      pubsub.publish(channel, { timer: JSON.parse(JSON.stringify(timers[channel].timer)) })
     }
 
-    if (!channelTimers[channel]) {
-      channelTimers[channel] = {
+    if (!timers[channel]) {
+      timers[channel] = {
         timer: createTimer(game.settings?.timerSeconds || 180),
         interval: null,
         start: () => {
-          if (!channelTimers[channel].timer) {
-            channelTimers[channel].timer = createTimer(game.settings?.timerSeconds || 180)
+          if (!timers[channel].timer) {
+            timers[channel].timer = createTimer(game.settings?.timerSeconds || 180)
           }
 
-          channelTimers[channel].timer.isRunning = true
+          timers[channel].timer.isRunning = true
           publishTimer()
-          channelTimers[channel].interval = setInterval(() => {
-            if (channelTimers[channel].timer.remaining <= 0) {
-              clearInterval(channelTimers[channel].interval)
-              channelTimers[channel].timer.isRunning = false
+          timers[channel].interval = setInterval(() => {
+            if (timers[channel].timer.remaining <= 0) {
+              clearInterval(timers[channel].interval)
+              timers[channel].timer.isRunning = false
               publishTimer()
               return
             }
-            channelTimers[channel].timer.remaining--
+            timers[channel].timer.remaining--
             publishTimer()
           }, 1000)
         },
         pause: () => {
-          channelTimers[channel].timer.isRunning = false
-          clearInterval(channelTimers[channel].interval)
+          timers[channel].timer.isRunning = false
+          clearInterval(timers[channel].interval)
           publishTimer()
         },
         reset: () => {
-          channelTimers[channel].timer.isRunning = false
-          clearInterval(channelTimers[channel].interval)
-          channelTimers[channel].timer = createTimer(game.settings?.timerSeconds || 180)
+          timers[channel].timer.isRunning = false
+          clearInterval(timers[channel].interval)
+          timers[channel].timer = createTimer(game.settings?.timerSeconds || 180)
           publishTimer()
         },
       }
@@ -60,15 +60,19 @@ module.exports.timer = {
   },
   startTimer: (gameId) => {
     const channel = getChannelFromId(gameId)
-    channelTimers[channel].start()
+    timers[channel]?.start()
   },
   pauseTimer: (gameId) => {
     const channel = getChannelFromId(gameId)
-    channelTimers[channel].pause()
+    timers[channel]?.pause()
   },
   resetTimer: (gameId) => {
     const channel = getChannelFromId(gameId)
-    channelTimers[channel].reset()
+    timers[channel]?.reset()
+  },
+  deleteTimer: (gameId) => {
+    const channel = getChannelFromId(gameId)
+    delete timers[channel]
   }
 }
 
@@ -84,7 +88,7 @@ const getChannelFromId = (id) => `${id}_TIMER_CHANNEL`
  */
 function createTimer(seconds) {
   return {
-    totalSeconds: seconds,
+    seconds,
     remaining: seconds,
     isRunning: false,
   }

@@ -19,3 +19,16 @@ module.exports.game = {
     (payload, variables) => payload?.game?.id === variables?.gameId
   )
 }
+
+module.exports.gameEnded = {
+  subscribe: withFilter(
+    (_, { gameId }, { pubsub }) => {
+      const game = GameDAO.get(gameId)
+      if (!game) {
+        throw new ApolloError(`Game ID ${gameId} not found`, '404')
+      }
+      return pubsub.asyncIterator([ 'GAME_ENDED' ])
+    },
+    (payload, variables) => payload?.gameEnded?.gameId === variables?.gameId
+  )
+}

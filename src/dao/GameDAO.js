@@ -2,7 +2,14 @@ const games = [] // FIXME this will eventually be a database
 
 const GameDAO = {
   add: item => games.push(item),
-  get: id => games.find(game => game.id === id),
+  delete: gameId => {
+    const index = games.findIndex(item => item.id === gameId)
+    if (index < 0) {
+      throw new Error(`Game ID ${gameId} not found`)
+    }
+    games.splice(index, 1)
+  },
+  get: gameId => games.find(game => game.id === gameId),
   getAll: () => JSON.parse(JSON.stringify(games)),
   setLetter: (gameId, value) => {
     const game = games.find(game => game.id === gameId)

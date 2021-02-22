@@ -1,5 +1,6 @@
 const { ApolloError } = require('apollo-server')
 const { GameDAO } = require('../../../dao')
+const { timer: timerSubscriptions } = require('../../timer/resolvers/subscription')
 
 module.exports.createGame = (_, { hostName, gameName }, { pubsub }) => {
   const host = {
@@ -47,13 +48,16 @@ module.exports.joinGame = (_, { gameId, userName }, { pubsub }) => {
 }
 
 module.exports.leaveGame = (_, { gameId, userId }, { pubsub }) => {
-  try {
-    // FIXME if the userId === hostId, delete game
+  const game = GameDAO.get(gameId)
+  if (game?.hostId === userId) {
+    GameDAO.delete(gameId)
+    timerSubscriptions.deleteTimer(gameId)
+    const message = 'Game ended by host'
+    pubsub.publish('GAME_ENDED', { gameEnded: { gameId, message } })
+  } else {
     GameDAO.removePlayer(gameId, userId)
-  } catch(e) {
-    throw new ApolloError(e.message, '404')
+    pubsub.publish('GAME_CHANGED', { game })
   }
-  pubsub.publish('GAME_CHANGED')
   return {
     success: true
   }

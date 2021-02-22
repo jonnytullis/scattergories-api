@@ -33,12 +33,17 @@ module.exports = gql`
     }
     extend type Subscription {
         game(gameId: String!): Game!
+        gameEnded(gameId: String!): GameEndedPayload!
     }
     
     ########## PAYLOADS ##########
     type CreateGamePayload {
         game: Game!
         user: User!
+    }
+    type GameEndedPayload {
+        gameId: String!
+        message: String
     }
     type JoinGamePayload {
         game: Game!

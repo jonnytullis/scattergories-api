@@ -2,7 +2,7 @@ const { gql } = require('apollo-server')
 
 module.exports = gql`
     type Timer {
-        totalSeconds: Int!
+        seconds: Int!
         remaining: Int!
         isRunning: Boolean!
     }
