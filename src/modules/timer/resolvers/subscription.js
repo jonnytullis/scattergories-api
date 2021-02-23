@@ -12,7 +12,7 @@ module.exports.timer = {
     const channel = getChannelFromId(gameId)
 
     const publishTimer = () => {
-      pubsub.publish(channel, { timer: JSON.parse(JSON.stringify(timers[channel].timer)) })
+      pubsub.publish(channel, { timer: JSON.parse(JSON.stringify(timers[channel]?.timer || {})) })
     }
 
     if (!timers[channel]) {
@@ -20,7 +20,7 @@ module.exports.timer = {
         timer: createTimer(game.settings?.timerSeconds || 180),
         interval: null,
         start: () => {
-          if (!timers[channel].timer) {
+          if (!timers[channel]?.timer) {
             timers[channel].timer = createTimer(game.settings?.timerSeconds || 180)
           }
 
