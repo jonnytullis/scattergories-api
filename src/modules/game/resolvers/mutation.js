@@ -14,15 +14,15 @@ module.exports.createGame = (_, { hostName, gameName }, { pubsub }) => {
     name: gameName || `${host.name}'s Game`,
     hostId: host.id,
     players: [ host ],
-    settings: generateDefaultSettings()
+    settings: generateDefaultSettings(),
   }
 
   GameDAO.add(game)
   pubsub.publish('GAME_CREATED', { games: GameDAO.getAll() })
 
   return {
-    game,
-    user: host
+    gameId: game.id,
+    userId: host.id
   }
 }
 
@@ -42,8 +42,8 @@ module.exports.joinGame = (_, { gameId, userName }, { pubsub }) => {
   pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
 
   return {
-    game,
-    user
+    gameId: game.id,
+    userId: user.id
   }
 }
 
@@ -52,8 +52,8 @@ module.exports.leaveGame = (_, { gameId, userId }, { pubsub }) => {
   if (game?.hostId === userId) {
     GameDAO.delete(gameId)
     timerSubscriptions.deleteTimer(gameId)
-    const gameEnded = { gameId, message: 'Game ended by host' }
-    pubsub.publish('GAME_UPDATED', { gameUpdated: { gameEnded } })
+    const status = { gameId, message: 'Game ended by host' }
+    pubsub.publish('GAME_UPDATED', { gameUpdated: { status } })
   } else {
     GameDAO.removePlayer(gameId, userId)
     pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
