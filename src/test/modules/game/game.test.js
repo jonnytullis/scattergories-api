@@ -2,7 +2,7 @@ const { createTestClient } = require('apollo-server-testing')
 const server = require('../../../prepareServer')
 const { CREATE_GAME } = require('./gql')
 
-const { mutate, query } = createTestClient(server)
+const { mutate } = createTestClient(server)
 
 test('Create Game', async () => {
   const result = await mutate({
