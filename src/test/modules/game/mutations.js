@@ -18,4 +18,12 @@ module.exports.JOIN_GAME = gql`
     }
 `
 
+module.exports.LEAVE_GAME = gql`
+    mutation($gameId: String!, $userId: ID!) {
+        leaveGame(gameId: $gameId, userId: $userId) {
+            success
+        }
+    }
+`
+
 
