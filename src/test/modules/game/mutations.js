@@ -26,4 +26,12 @@ module.exports.LEAVE_GAME = gql`
     }
 `
 
+module.exports.NEW_LETTER = gql`
+    mutation($gameId: String!, $userId: ID!) {
+        newLetter(gameId: $gameId, userId: $userId) {
+            letter
+        }
+    }
+`
+
 

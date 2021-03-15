@@ -67,10 +67,12 @@ module.exports.newLetter = async (_, { gameId, userId }, { pubsub, GameDAO }) =>
   if (!game) {
     throw new ApolloError(`Game ID ${gameId} not found`, '404')
   }
-  if (game.hostId === userId) {
-    await GameDAO.setLetter(game.id, getRandomLetter())
-    pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
+  if (game.hostId !== userId) {
+    throw new ApolloError(`Unauthorized. Must be host to update game.`, '403')
   }
+
+  await GameDAO.setLetter(game.id, getRandomLetter())
+  await pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
   return {
     letter: game.letter
   }

@@ -1,7 +1,7 @@
 const { ApolloServer } = require('apollo-server')
 const { createTestClient } = require('apollo-server-testing')
 const { modules, typeDefs, context } = require('../../../prepareServer')
-const { CREATE_GAME, JOIN_GAME, LEAVE_GAME } = require('./mutations')
+const { CREATE_GAME, JOIN_GAME, LEAVE_GAME, NEW_LETTER } = require('./mutations')
 const { GAME } = require('./queries')
 
 const server = new ApolloServer({
@@ -166,4 +166,34 @@ test('Leave Game', async () => {
   // Game should be deleted if host leaves
   expect(result?.data?.leaveGame?.success).toEqual(true)
   expect(GameDAO.get(mockGame.id)).toBeUndefined()
+})
+
+test('New Letter', async () => {
+  const mockGame = getMockGame()
+  const mockHost = mockGame.players[0]
+  const oldLetter = mockGame.letter
+  GameDAO.add(mockGame)
+
+  let result = await mutate({
+    mutation: NEW_LETTER,
+    variables: { gameId: 'NOT-VALID', userId: mockHost.id }
+  })
+  expect(result?.errors?.[0].message?.toLowerCase()).toContain('not found') // Game should not be found
+
+  result = await mutate({
+    mutation: NEW_LETTER,
+    variables: { gameId: mockGame.id, userId: 'NOT-VALID' }
+  })
+  expect(result?.errors?.[0].message?.toLowerCase()).toContain('unauthorized') // Unauthorized since it wasn't the host
+
+  result = await mutate({
+    mutation: NEW_LETTER,
+    variables: { gameId: mockGame.id, userId: mockHost.id }
+  })
+
+  const newLetter = result?.data?.newLetter?.letter
+
+  expect(newLetter === oldLetter).toEqual(false) // Old and new letters should be different.
+  expect(newLetter).toMatch(/[A-Z]/) //New letter should be A-Z.
+  expect(GameDAO.get(mockGame.id)?.letter).toEqual(newLetter) // DB should be updated.
 })
