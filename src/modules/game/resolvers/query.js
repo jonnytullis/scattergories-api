@@ -1,8 +1,8 @@
 const { ApolloError } = require('apollo-server')
 
-module.exports.games = (_, { GameDAO }) => GameDAO.getAll()
+module.exports.games = (_, __, { GameDAO }) => GameDAO.getAll()
 
-module.exports.game = (_, { gameId, userId, GameDAO }) => {
+module.exports.game = (_, { gameId, userId }, { GameDAO }) => {
   const game = GameDAO.get(gameId)
   if (!game) {
     throw new ApolloError('Game not found', '404')

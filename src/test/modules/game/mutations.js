@@ -9,4 +9,13 @@ module.exports.CREATE_GAME = gql`
     }
 `
 
+module.exports.JOIN_GAME = gql`
+    mutation($gameId: String!, $userName: String!) {
+        joinGame(gameId: $gameId, userName: $userName) {
+            userId
+            gameId
+        }
+    }
+`
+
 
