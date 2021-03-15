@@ -1,8 +1,7 @@
 const { ApolloError } = require('apollo-server')
-const { GameDAO } = require('../../../dao')
 const { timer: timerSubscriptions } = require('../../timer/resolvers/subscription')
 
-module.exports.createGame = (_, { hostName, gameName }, { pubsub }) => {
+module.exports.createGame = (_, { hostName, gameName }, { pubsub, GameDAO }) => {
   const host = {
     id: generateUserId(),
     name: hostName
@@ -26,7 +25,7 @@ module.exports.createGame = (_, { hostName, gameName }, { pubsub }) => {
   }
 }
 
-module.exports.joinGame = (_, { gameId, userName }, { pubsub }) => {
+module.exports.joinGame = (_, { gameId, userName }, { pubsub, GameDAO }) => {
   const user = {
     id: generateUserId(),
     name: userName
@@ -47,7 +46,7 @@ module.exports.joinGame = (_, { gameId, userName }, { pubsub }) => {
   }
 }
 
-module.exports.leaveGame = (_, { gameId, userId }, { pubsub }) => {
+module.exports.leaveGame = (_, { gameId, userId }, { pubsub, GameDAO }) => {
   const game = GameDAO.get(gameId)
   if (game?.hostId === userId) {
     GameDAO.delete(gameId)
@@ -63,7 +62,7 @@ module.exports.leaveGame = (_, { gameId, userId }, { pubsub }) => {
   }
 }
 
-module.exports.newLetter = async (_, { gameId, userId }, { pubsub }) => {
+module.exports.newLetter = async (_, { gameId, userId }, { pubsub, GameDAO }) => {
   let game = GameDAO.get(gameId)
   if (!game) {
     throw new ApolloError(`Game ID ${gameId} not found`, '404')

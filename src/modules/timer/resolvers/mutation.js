@@ -1,23 +1,22 @@
 const { ApolloError } = require('apollo-server')
-const { GameDAO } = require('../../../dao')
 const subscriptions = require('./subscription')
 
-module.exports.startTimer = (_, { gameId, userId }) => {
-  validateRequest(gameId, userId)
+module.exports.startTimer = (_, { gameId, userId, GameDAO }) => {
+  validateRequest(gameId, userId, GameDAO)
   subscriptions.timer.startTimer(gameId)
 }
 
-module.exports.pauseTimer = (_, { gameId, userId }) => {
-  validateRequest(gameId, userId)
+module.exports.pauseTimer = (_, { gameId, userId, GameDAO }) => {
+  validateRequest(gameId, userId, GameDAO)
   subscriptions.timer.pauseTimer(gameId)
 }
 
-module.exports.resetTimer = (_, { gameId, userId }) => {
-  validateRequest(gameId, userId)
+module.exports.resetTimer = (_, { gameId, userId, GameDAO }) => {
+  validateRequest(gameId, userId, GameDAO)
   subscriptions.timer.resetTimer(gameId)
 }
 
-function validateRequest(gameId, userId) {
+function validateRequest(gameId, userId, GameDAO) {
   const game = GameDAO.get(gameId)
   if (!game) {
     throw new ApolloError(`Game ID ${gameId} not found`, '404')

@@ -2,6 +2,7 @@ const games = [] // FIXME this will eventually be a database
 
 const GameDAO = {
   add: item => games.push(item),
+  clear: () => { games.splice(0, games.length) },
   delete: gameId => {
     const index = games.findIndex(item => item.id === gameId)
     if (index < 0) {

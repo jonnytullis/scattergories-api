@@ -1,5 +1,4 @@
 const { ApolloError, withFilter } = require('apollo-server')
-const { GameDAO } = require('../../../dao')
 
 module.exports.games = {
   subscribe: (_, args, { pubsub }) => {
@@ -9,7 +8,7 @@ module.exports.games = {
 
 module.exports.gameUpdated = {
   subscribe: withFilter(
-    (_, { gameId, userId }, { pubsub }) => {
+    (_, { gameId, userId }, { pubsub, GameDAO }) => {
       const game = GameDAO.get(gameId)
       if (!game) {
         throw new ApolloError(`Game ID ${gameId} not found`, '404')
