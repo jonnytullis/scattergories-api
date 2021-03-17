@@ -1,8 +1,8 @@
 const { ApolloServer } = require('apollo-server')
 const { createTestClient } = require('apollo-server-testing')
 const { modules, typeDefs, context } = require('../../../prepareServer')
-const { CREATE_GAME, JOIN_GAME, LEAVE_GAME, NEW_LETTER } = require('./mutations')
-const { GAME } = require('./queries')
+const { CREATE_GAME, JOIN_GAME, LEAVE_GAME, NEW_LETTER } = require('./mutation')
+const { GAME } = require('./query')
 
 const server = new ApolloServer({
   modules,
@@ -22,10 +22,11 @@ const getMockGame = () => ({
     name: 'Jonny'
   } ],
   letter: 'A',
+  prompts: [ 'T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12' ],
   settings: {
     timerSeconds: 180,
     numRounds: 3,
-    numPrompts: 3
+    numPrompts: 12
   }
 })
 
@@ -54,6 +55,7 @@ test('Create Game', async () => {
   expect(game.players).toEqual([ { id: resultData?.userId, name: hostName } ])
   expect(game.letter).toBeDefined()
   expect(game.settings).toBeDefined()
+  expect(game.prompts).toHaveLength(game.settings?.numPrompts)
 })
 
 test('Join Game', async () => {
@@ -148,7 +150,7 @@ test('Leave Game', async () => {
     variables: { gameId: mockGame.id, userId: player2.id }
   })
 
-  // Should have been successfull
+  // Should have been successful
   expect(result?.data?.leaveGame?.success).toEqual(true)
 
   let game = GameDAO.get(mockGame.id)

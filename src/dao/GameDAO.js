@@ -33,7 +33,6 @@ const GameDAO = {
     }
     game.players.splice(playerIndex, 1)
   },
-  getPrompts: () => require('./prompts.json'),
 }
 
 Object.freeze(GameDAO) // Singleton for now to preserve state. This will change when using a database

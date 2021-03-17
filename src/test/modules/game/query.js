@@ -11,6 +11,7 @@ module.exports.GAME = gql`
                 id
             }
             letter
+            prompts
             settings {
                 timerSeconds
                 numPrompts

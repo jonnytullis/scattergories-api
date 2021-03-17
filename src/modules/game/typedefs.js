@@ -7,6 +7,7 @@ module.exports = gql`
         hostId: ID!
         players: [User!]!
         letter: String
+        prompts: [String!]!
         settings: Settings!
     }
     

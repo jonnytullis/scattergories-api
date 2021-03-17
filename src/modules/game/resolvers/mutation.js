@@ -1,5 +1,8 @@
 const { ApolloError } = require('apollo-server')
+
 const { timer: timerSubscriptions } = require('../../timer/resolvers/subscription')
+const { generateUserId, generateGameId, generateDefaultSettings, getRandomLetter } = require('../helpers')
+const PromptsDAO = require('../../../dao/PromptsDAO')
 
 module.exports.createGame = (_, { hostName, gameName }, { pubsub, GameDAO }) => {
   const host = {
@@ -7,14 +10,18 @@ module.exports.createGame = (_, { hostName, gameName }, { pubsub, GameDAO }) => 
     name: hostName
   }
 
+  const gameId = generateGameId()
   const game = {
-    id: generateGameId(),
-    letter: getRandomLetter(),
+    id: gameId,
     name: gameName || `${host.name}'s Game`,
     hostId: host.id,
     players: [ host ],
+    letter: getRandomLetter(),
+    prompts: [],
     settings: generateDefaultSettings(),
   }
+
+  game.prompts = PromptsDAO.getRandomPrompts(game.settings.numPrompts)
 
   GameDAO.add(game)
   pubsub.publish('GAME_CREATED', { games: GameDAO.getAll() })
@@ -75,26 +82,5 @@ module.exports.newLetter = async (_, { gameId, userId }, { pubsub, GameDAO }) =>
   await pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
   return {
     letter: game.letter
-  }
-}
-
-function generateGameId() {
-  return Math.random().toString(36).slice(2, 8).toUpperCase()
-}
-
-function generateUserId() {
-  return Math.random().toString(36).slice(2)
-}
-
-function getRandomLetter() {
-  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-  return alphabet[Math.floor(Math.random() * alphabet.length)]
-}
-
-function generateDefaultSettings() {
-  return {
-    timerSeconds: 180,
-    numRounds: 3,
-    numPrompts: 12
   }
 }
