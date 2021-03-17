@@ -2,9 +2,8 @@ const { ApolloError } = require('apollo-server')
 
 const { timer: timerSubscriptions } = require('../../timer/resolvers/subscription')
 const { generateUserId, generateGameId, generateDefaultSettings, getRandomLetter } = require('../helpers')
-const PromptsDAO = require('../../../dao/PromptsDAO')
 
-module.exports.createGame = (_, { hostName, gameName }, { pubsub, GameDAO }) => {
+module.exports.createGame = (_, { hostName, gameName }, { pubsub, GameDAO, PromptsDAO }) => {
   const host = {
     id: generateUserId(),
     name: hostName
@@ -78,9 +77,28 @@ module.exports.newLetter = async (_, { gameId, userId }, { pubsub, GameDAO }) =>
     throw new ApolloError(`Unauthorized. Must be host to update game.`, '403')
   }
 
-  await GameDAO.setLetter(game.id, getRandomLetter())
+  GameDAO.setLetter(game.id, getRandomLetter())
   await pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
   return {
     letter: game.letter
+  }
+}
+
+module.exports.newPrompts = async (_, { gameId, userId }, { pubsub, GameDAO, PromptsDAO }) => {
+  let game = GameDAO.get(gameId)
+  if (!game) {
+    throw new ApolloError(`Game ID ${gameId} not found`, '404')
+  }
+  if (game.hostId !== userId) {
+    throw new ApolloError(`Unauthorized. Must be host to update game.`, '403')
+  }
+
+  const prompts = PromptsDAO.getRandomPrompts(game.settings?.numPrompts)
+  GameDAO.setPrompts(gameId, prompts)
+  game = GameDAO.get(gameId)
+  await pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
+
+  return {
+    prompts
   }
 }

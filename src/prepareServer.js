@@ -1,5 +1,5 @@
 const { PubSub, gql } = require('apollo-server')
-const GameDAO = require('./dao/GameDAO')
+const { GameDAO, PromptsDAO } = require('./dao')
 
 // These are placeholders that get extended in each module typedef
 const typeDefs = gql`
@@ -17,7 +17,7 @@ const typeDefs = gql`
 const pubsub = new PubSub()
 
 module.exports = {
-  context: { pubsub, GameDAO },
+  context: { pubsub, GameDAO, PromptsDAO },
   typeDefs,
   modules: [
     require('./modules/game'),

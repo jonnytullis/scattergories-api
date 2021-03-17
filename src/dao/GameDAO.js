@@ -1,4 +1,4 @@
-const games = [] // FIXME this will eventually be a database
+const games = [] // FIXME this will eventually be a database. Make GameDAO a class.
 
 const GameDAO = {
   add: item => games.push(item),
@@ -17,7 +17,15 @@ const GameDAO = {
     if (game) {
       game.letter = value
     }
-    return game
+  },
+  setPrompts: (gameId, value) => {
+    if (!Array.isArray(value)) {
+      throw new Error('Prompts value must be an array')
+    }
+    const game = games.find(game => game.id === gameId)
+    if (game) {
+      game.prompts = value
+    }
   },
   removePlayer: (gameId, userId) => {
     // Find the game
