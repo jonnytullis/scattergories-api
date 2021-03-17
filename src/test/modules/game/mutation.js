@@ -34,4 +34,12 @@ module.exports.NEW_LETTER = gql`
     }
 `
 
+module.exports.NEW_PROMPTS = gql`
+    mutation($gameId: String!, $userId: ID!) {
+        newPrompts(gameId: $gameId, userId: $userId) {
+            prompts
+        }
+    }
+`
+
 
