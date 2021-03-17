@@ -17,6 +17,12 @@ module.exports.gameUpdated = {
       if (!game.players?.some((el) => el.id === userId)) {
         throw new ApolloError(`Unauthorized. User ID ${userId} is not listed as a player in game ${gameId}.`, '403')
       }
+
+      // Publish the game right away (setTimeout for nextTick)
+      setTimeout(() => {
+        pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
+      }, 0)
+
       return pubsub.asyncIterator([ 'GAME_UPDATED' ])
     },
     (payload, variables) => {

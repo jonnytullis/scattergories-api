@@ -26,6 +26,7 @@ module.exports = gql`
     extend type Query {
         games: [Game!]!
         game(gameId: String!, userId: ID!): Game!
+        user(gameId: String!, userId: ID!): User!
     }
     extend type Mutation {
         createGame(hostName: String!, gameName: String!): CreateGamePayload!
