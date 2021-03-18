@@ -77,7 +77,13 @@ module.exports.newLetter = async (_, { gameId, userId }, { pubsub, GameDAO }) =>
     throw new ApolloError(`Unauthorized. Must be host to update game.`, '403')
   }
 
-  GameDAO.setLetter(game.id, getRandomLetter())
+  // Don't allow the same letter as before
+  let newLetter = getRandomLetter()
+  while (newLetter === game.letter) {
+    newLetter = getRandomLetter()
+  }
+
+  GameDAO.setLetter(game.id, newLetter)
   await pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
   return {
     letter: game.letter
