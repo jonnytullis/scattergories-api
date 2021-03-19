@@ -1,5 +1,17 @@
 const { ApolloError, withFilter } = require('apollo-server')
 
+/** Adds ability to specify what the subscription does when it is canceled **/
+function asyncIteratorWithCancel(asyncIterator, onCancel) {
+  const asyncReturn = asyncIterator.return
+
+  asyncIterator.return = () => {
+    onCancel()
+    return asyncReturn ? asyncReturn.call(asyncIterator) : Promise.resolve({ value: undefined, done: true })
+  }
+
+  return asyncIterator
+}
+
 module.exports.games = {
   subscribe: (_, args, { pubsub }) => {
     return pubsub.asyncIterator([ 'GAME_CREATED' ])
@@ -23,7 +35,9 @@ module.exports.gameUpdated = {
         pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
       }, 0)
 
-      return pubsub.asyncIterator([ 'GAME_UPDATED' ])
+      return asyncIteratorWithCancel(pubsub.asyncIterator([ 'GAME_UPDATED' ]), () => {
+        console.log('Subscription canceled')
+      })
     },
     (payload, variables) => {
       return payload?.gameUpdated?.game?.id === variables?.gameId ||

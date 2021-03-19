@@ -1,7 +1,5 @@
-const { ApolloError } = require('apollo-server')
-
 const { timer: timerSubscriptions } = require('../../timer/resolvers/subscription')
-const { generateUserId, generateGameId, generateDefaultSettings, getRandomLetter } = require('../helpers')
+const { generateUserId, generateGameId, generateDefaultSettings, getRandomLetter, getValidGame, mustBeHost } = require('../helpers')
 
 module.exports.createGame = (_, { hostName, gameName }, { pubsub, GameDAO, PromptsDAO }) => {
   const host = {
@@ -37,11 +35,7 @@ module.exports.joinGame = (_, { gameId, userName }, { pubsub, GameDAO }) => {
     name: userName
   }
 
-  // Find the game
-  const game = GameDAO.get(gameId)
-  if (!game) {
-    throw new ApolloError(`Game ID ${gameId} not found`, '404')
-  }
+  const game = getValidGame(gameId, GameDAO)
 
   game.players.push(user)
   pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
@@ -69,13 +63,8 @@ module.exports.leaveGame = (_, { gameId, userId }, { pubsub, GameDAO }) => {
 }
 
 module.exports.newLetter = async (_, { gameId, userId }, { pubsub, GameDAO }) => {
-  let game = GameDAO.get(gameId)
-  if (!game) {
-    throw new ApolloError(`Game ID ${gameId} not found`, '404')
-  }
-  if (game.hostId !== userId) {
-    throw new ApolloError(`Unauthorized. Must be host to update game.`, '403')
-  }
+  let game = getValidGame(gameId, GameDAO)
+  mustBeHost(gameId, userId, GameDAO)
 
   // Don't allow the same letter as before
   let newLetter = getRandomLetter()
@@ -84,6 +73,7 @@ module.exports.newLetter = async (_, { gameId, userId }, { pubsub, GameDAO }) =>
   }
 
   GameDAO.setLetter(game.id, newLetter)
+  game = GameDAO.get(gameId)
   await pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
   return {
     letter: game.letter
@@ -91,13 +81,8 @@ module.exports.newLetter = async (_, { gameId, userId }, { pubsub, GameDAO }) =>
 }
 
 module.exports.newPrompts = async (_, { gameId, userId }, { pubsub, GameDAO, PromptsDAO }) => {
-  let game = GameDAO.get(gameId)
-  if (!game) {
-    throw new ApolloError(`Game ID ${gameId} not found`, '404')
-  }
-  if (game.hostId !== userId) {
-    throw new ApolloError(`Unauthorized. Must be host to update game.`, '403')
-  }
+  let game = getValidGame(gameId, GameDAO)
+  mustBeHost(gameId, userId, GameDAO)
 
   const prompts = PromptsDAO.getRandomPrompts(game.settings?.numPrompts)
   GameDAO.setPrompts(gameId, prompts)
