@@ -21,6 +21,11 @@ module.exports = gql`
         numRounds: Int!
         numPrompts: Int!
     }
+    input SettingsInput {
+        timerSeconds: Int
+        numRounds: Int
+        numPrompts: Int
+    }
 
     ########## GQL ##########
     extend type Query {
@@ -34,6 +39,7 @@ module.exports = gql`
         leaveGame(gameId: String!, userId: ID!): LeaveGamePayload!
         newLetter(gameId: String!, userId: ID!): NewLetterPayload!
         newPrompts(gameId: String!, userId: ID!): NewPromptsPayload!
+        updateSettings(gameId: String!, userId: ID!, settings: SettingsInput!): Settings!
     }
     extend type Subscription {
         gameUpdated(gameId: String!, userId: ID!): GameUpdatedPayload!

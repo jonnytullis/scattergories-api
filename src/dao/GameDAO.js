@@ -5,10 +5,9 @@ const GameDAO = {
   clear: () => { games.splice(0, games.length) },
   delete: gameId => {
     const index = games.findIndex(item => item.id === gameId)
-    if (index < 0) {
-      throw new Error(`Game ID ${gameId} not found`)
+    if (index >= 0) {
+      games.splice(index, 1)
     }
-    games.splice(index, 1)
   },
   get: gameId => games.find(game => game.id === gameId),
   getAll: () => JSON.parse(JSON.stringify(games)),
@@ -36,6 +35,12 @@ const GameDAO = {
       if (playerIndex >= 0) {
         game.players.splice(playerIndex, 1)
       }
+    }
+  },
+  updateSettings: (gameId, settings) => {
+    const game = games.find(game => game.id === gameId)
+    if (game) {
+      game.settings = { ...game.settings, ...settings }
     }
   },
 }

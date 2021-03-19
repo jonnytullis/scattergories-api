@@ -1,3 +1,4 @@
+const { ApolloError } = require('apollo-server')
 const { timer: timerSubscriptions } = require('../../timer/resolvers/subscription')
 const { generateUserId, generateGameId, generateDefaultSettings, getRandomLetter, getValidGame, mustBeHost } = require('../helpers')
 
@@ -47,13 +48,16 @@ module.exports.joinGame = (_, { gameId, userName }, { pubsub, GameDAO }) => {
 }
 
 module.exports.leaveGame = (_, { gameId, userId }, { pubsub, GameDAO }) => {
-  const game = GameDAO.get(gameId)
+  const game = getValidGame(gameId, GameDAO)
   if (game?.hostId === userId) {
     GameDAO.delete(gameId)
     timerSubscriptions.deleteTimer(gameId)
-    const status = { gameId, message: 'Game ended by host' }
+    const status = { gameId, message: 'Game ended by host', ended: true }
     pubsub.publish('GAME_UPDATED', { gameUpdated: { status } })
   } else {
+    if (!game.players.some((el) => el.id === userId)) {
+      throw new ApolloError('Player not found in game', '404')
+    }
     GameDAO.removePlayer(gameId, userId)
     pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
   }
@@ -92,4 +96,14 @@ module.exports.newPrompts = async (_, { gameId, userId }, { pubsub, GameDAO, Pro
   return {
     prompts
   }
+}
+
+module.exports.updateSettings = async (_, { gameId, userId, settings }, { pubsub, GameDAO }) => {
+  mustBeHost(gameId, userId, GameDAO)
+
+  GameDAO.updateSettings(gameId, settings)
+
+  let game = getValidGame(gameId, GameDAO)
+  await pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
+  return game.settings
 }
