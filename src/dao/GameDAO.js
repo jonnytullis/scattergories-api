@@ -30,16 +30,13 @@ const GameDAO = {
   removePlayer: (gameId, userId) => {
     // Find the game
     const game = games.find(game => game.id === gameId)
-    if (!game) {
-      throw new Error(`Game ID ${gameId} not found`)
+    if (game) {
+      // Remove the player from the game player list
+      const playerIndex = game.players.findIndex(user => user.id === userId)
+      if (playerIndex >= 0) {
+        game.players.splice(playerIndex, 1)
+      }
     }
-
-    // Remove the player from the game player list
-    const playerIndex = game.players.findIndex(user => user.id === userId)
-    if (playerIndex < 0) {
-      throw new Error(`Player with ID ${userId} not found in Game with ID ${gameId}`)
-    }
-    game.players.splice(playerIndex, 1)
   },
 }
 
