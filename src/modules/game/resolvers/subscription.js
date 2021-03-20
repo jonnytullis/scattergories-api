@@ -21,6 +21,7 @@ module.exports.games = {
   }
 }
 
+// FIXME the subscription needs to be cancelled when the user leaves the game, even if they don't leave the page
 module.exports.gameUpdated = {
   subscribe: withFilter(
     (_, { gameId, userId }, { pubsub, GameDAO }) => {
@@ -31,6 +32,7 @@ module.exports.gameUpdated = {
         throw new ApolloError(`Unauthorized. User ID ${userId} is not listed as a player in game ${gameId}.`, '403')
       }
 
+      // In case the user is pending leave
       pendingInactiveUserCallbacks.userId = undefined
 
       // Publish the game right away (setTimeout for nextTick)
@@ -55,12 +57,16 @@ module.exports.gameUpdated = {
 //    from the game.
 const pendingInactiveUserCallbacks = {} // key: userId, value: function
 function onSubscriptionCancel({ gameId, userId }, { pubsub, GameDAO }) {
-  pendingInactiveUserCallbacks.userId = () => {
-    leaveGame(undefined, { gameId, userId }, { pubsub, GameDAO })
-  }
-  setTimeout(() => {
-    if (typeof pendingInactiveUserCallbacks.userId === 'function') {
-      pendingInactiveUserCallbacks.userId()
+  const game = GameDAO.get(gameId)
+  if (game && game.players?.some((item) => item.id === userId)) {
+    pendingInactiveUserCallbacks.userId = () => {
+      leaveGame(undefined, { gameId, userId }, { pubsub, GameDAO })
     }
-  }, 5000)
+    setTimeout(() => {
+      if (typeof pendingInactiveUserCallbacks.userId === 'function') {
+        pendingInactiveUserCallbacks.userId()
+        delete pendingInactiveUserCallbacks.userId
+      }
+    }, 5000)
+  }
 }

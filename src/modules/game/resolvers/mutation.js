@@ -1,4 +1,4 @@
-const { ApolloError } = require('apollo-server')
+const { ApolloError, UserInputError } = require('apollo-server')
 const { timer: timerSubscriptions } = require('../../timer/resolvers/subscription')
 const { generateUserId, generateGameId, generateDefaultSettings, getRandomLetter, getValidGame, mustBeHost } = require('../helpers')
 
@@ -101,7 +101,17 @@ module.exports.newPrompts = async (_, { gameId, userId }, { pubsub, GameDAO, Pro
 module.exports.updateSettings = async (_, { gameId, userId, settings }, { pubsub, GameDAO }) => {
   mustBeHost(gameId, userId, GameDAO)
 
-  GameDAO.updateSettings(gameId, settings)
+  const newSettings = { ...settings }
+  if (Number(settings.timerSeconds) < 30) {
+    throw new UserInputError('Timer length must be 30 seconds or more')
+  }
+  if (Number(settings.numRounds) < 1) {
+    throw new UserInputError('Number of rounds must be greater than 1')
+  }
+  if (Number(settings.numPrompts) < 1) {
+    throw new UserInputError('Number of prompts must be greater than 1')
+  }
+  GameDAO.updateSettings(gameId, newSettings)
 
   let game = getValidGame(gameId, GameDAO)
   await pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
