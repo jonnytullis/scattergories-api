@@ -1,13 +1,9 @@
 const { ApolloError, UserInputError } = require('apollo-server')
 const { timer: timerSubscriptions } = require('../../timer/resolvers/subscription')
-const { generateUserId, generateGameId, generateDefaultSettings, getRandomLetter, getValidGame, mustBeHost } = require('../helpers')
+const { createUser, generateGameId, generateDefaultSettings, getRandomLetter, getValidGame, mustBeHost } = require('../helpers')
 
 module.exports.createGame = (_, { hostName, gameName }, { pubsub, GameDAO, PromptsDAO }) => {
-  const host = {
-    id: generateUserId(),
-    name: hostName
-  }
-
+  const host = createUser(hostName, 0)
   const gameId = generateGameId()
   const game = {
     id: gameId,
@@ -31,12 +27,8 @@ module.exports.createGame = (_, { hostName, gameName }, { pubsub, GameDAO, Promp
 }
 
 module.exports.joinGame = (_, { gameId, userName }, { pubsub, GameDAO }) => {
-  const user = {
-    id: generateUserId(),
-    name: userName
-  }
-
   const game = getValidGame(gameId, GameDAO)
+  const user = createUser(userName, game.players?.length)
 
   game.players.push(user)
   pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })

@@ -15,6 +15,7 @@ module.exports = gql`
     type User {
         id: ID!
         name: String! # display name
+        color: String!
     }
     type Settings {
         timerSeconds: Int!

@@ -3,7 +3,7 @@ const { ApolloError, withFilter } = require('apollo-server')
 const { getValidGame } = require('../helpers')
 const { leaveGame } = require('./mutation')
 
-/** Adds ability to specify what the subscription does when it is canceled **/
+/** Adds ability to specify what the subscription does when it is canceled by the client **/
 function asyncIteratorWithCancel(asyncIterator, onCancel) {
   const asyncReturn = asyncIterator.return
 
@@ -21,7 +21,6 @@ module.exports.games = {
   }
 }
 
-// FIXME the subscription needs to be cancelled when the user leaves the game, even if they don't leave the page
 module.exports.gameUpdated = {
   subscribe: withFilter(
     (_, { gameId, userId }, { pubsub, GameDAO }) => {

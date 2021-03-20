@@ -52,7 +52,9 @@ test('Create Game', async () => {
   expect(game.id).toEqual(resultData?.gameId)
   expect(game.name).toEqual(gameName)
   expect(game.hostId).toEqual(resultData?.userId)
-  expect(game.players).toEqual([ { id: resultData?.userId, name: hostName } ])
+  expect(game.players[0].id).toEqual(resultData?.userId)
+  expect(game.players[0].name).toEqual(hostName)
+  expect(game.players[0]).toHaveProperty('color')
   expect(game.letter).toBeDefined()
   expect(game.settings).toBeDefined()
   expect(game.prompts).toHaveLength(game.settings?.numPrompts)
@@ -77,7 +79,9 @@ test('Join Game', async () => {
   // Make sure the new user is listed as a player in the game in the DB
   const game = GameDAO.get(mockGame.id)
   expect(game?.players).toHaveLength(2)
-  expect(game?.players).toContainEqual({ id: resultData.userId, name: userName })
+  expect(game?.players[1].id).toEqual(resultData.userId)
+  expect(game?.players[1].name).toEqual(userName)
+  expect(game?.players[1]).toHaveProperty('color')
 
   // Check if user tries to join game that doesn't exist
   const notFoundResult = await mutate({
