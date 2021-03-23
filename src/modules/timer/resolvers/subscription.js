@@ -27,14 +27,16 @@ module.exports.timer = {
           timers[channel].timer.isRunning = true
           publishTimer()
           timers[channel].interval = setInterval(() => {
-            if (timers[channel].timer.remaining <= 0) {
-              clearInterval(timers[channel].interval)
-              timers[channel].timer.isRunning = false
+            if (timers[channel]?.timer) {
+              if (timers[channel].timer.remaining <= 0) {
+                clearInterval(timers[channel].interval)
+                timers[channel].timer.isRunning = false
+                publishTimer()
+                return
+              }
+              timers[channel].timer.remaining--
               publishTimer()
-              return
             }
-            timers[channel].timer.remaining--
-            publishTimer()
           }, 1000)
         },
         pause: () => {
