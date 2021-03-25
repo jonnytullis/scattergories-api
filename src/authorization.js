@@ -1,20 +1,32 @@
+const { ForbiddenError } = require('apollo-server')
 const { AuthTokenDAO, GameDAO } = require('./dao')
 
-module.exports.authorize = (req) => {
-  const auth = {}
+module.exports.getAuth = (req) => {
+  const auth = {} // { sessionId:String, user:User }
 
-  if (req?.headers?.authorization) {
-    const sessionId = req.headers.authorization.split(' ')[1]
-    const authToken = AuthTokenDAO.get(sessionId)
+  const sessionId = req?.headers?.authorization?.split(' ')?.[1]
+  const authToken = AuthTokenDAO.get(sessionId)
 
-    auth.sessionId = authToken?.sessionId
-    auth.game = GameDAO.get(authToken?.gameId)
-    auth.user = auth.game?.players?.find(player => player.id === authToken?.userId)
+  auth.sessionId = authToken?.sessionId
+  const game = GameDAO.get(authToken?.gameId)
+  auth.user = game?.players?.find(player => player.id === authToken?.userId)
+  auth.gameId = authToken?.gameId
 
-    if (auth.game && auth.user) {
-      auth.isHost = auth.user?.id === auth.game?.hostId
-    } else {
-      auth.isHost = false
+  auth.authorizeUser = () => {
+    if (!authToken) {
+      throw new ForbiddenError('You are not authorized')
+    }
+
+    if (!auth.user) {
+      throw new ForbiddenError(`You are not an active player in game ${authToken.gameId}`)
+    }
+  }
+
+  auth.authorizeHost = () => {
+    auth.authorizeUser()
+
+    if (!game || game.hostId !== auth.user.id) {
+      throw new ForbiddenError(`You are not authorized. Must be game host to perform this action.`)
     }
   }
 

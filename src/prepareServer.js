@@ -1,6 +1,6 @@
 const { PubSub, gql } = require('apollo-server')
-const { AuthTokenDAO, GameDAO, PromptsDAO } = require('./dao')
-const { authorize } = require('./authorization')
+const { GameDAO, PromptsDAO } = require('./dao')
+const { getAuth } = require('./authorization')
 
 // These are placeholders that get extended in each module typedef
 const typeDefs = gql`
@@ -19,11 +19,10 @@ const pubsub = new PubSub()
 
 module.exports = {
   context: ({ req }) => {
-    const auth = authorize(req)
+    const auth = getAuth(req)
     return {
       auth,
       pubsub,
-      AuthTokenDAO,
       GameDAO,
       PromptsDAO
     }
