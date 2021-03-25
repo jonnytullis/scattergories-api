@@ -22,7 +22,15 @@ const AuthTokenDAO = {
     authTokens.push(authToken)
     return authToken
   },
-  get: sessionId => authTokens.find(authToken => authToken.id === sessionId)
+  get: sessionId => authTokens.find(authToken => authToken.sessionId === sessionId),
+  delete: sessionId => {
+    const index = authTokens.findIndex(authToken => authToken.id === sessionId)
+    if (index >= 0) {
+      authTokens.splice(index, 1)
+    } else {
+      console.error('Unable to delete authToken. Session ID not found:', sessionId)
+    }
+  }
 }
 
 Object.freeze(AuthTokenDAO) // Singleton for now to preserve state. This will change when using a database

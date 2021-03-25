@@ -1,4 +1,4 @@
-const { ApolloError, UserInputError } = require('apollo-server')
+const { UserInputError } = require('apollo-server')
 const { timer: timerSubscriptions } = require('../../timer/resolvers/subscription')
 const { createUser, generateGameId, generateDefaultSettings, getRandomLetter, getValidGame, mustBeHost } = require('../helpers')
 
@@ -42,7 +42,8 @@ module.exports.joinGame = (_, { gameId, userName }, { pubsub, GameDAO, AuthToken
   }
 }
 
-module.exports.leaveGame = (_, { gameId, userId }, { pubsub, GameDAO }) => {
+module.exports.leaveGame = (_, { gameId, userId }, { auth, pubsub, AuthTokenDAO, GameDAO }) => {
+  auth.authorizeUser()
   const game = getValidGame(gameId, GameDAO)
   if (game?.hostId === userId) {
     GameDAO.delete(gameId)
@@ -50,10 +51,8 @@ module.exports.leaveGame = (_, { gameId, userId }, { pubsub, GameDAO }) => {
     const status = { gameId, message: 'Game ended by host', ended: true }
     pubsub.publish('GAME_UPDATED', { gameUpdated: { status } })
   } else {
-    if (!game.players.some((el) => el.id === userId)) {
-      throw new ApolloError('Player not found in game', '404')
-    }
     GameDAO.removePlayer(gameId, userId)
+    AuthTokenDAO.delete(auth.sessionId)
     pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
   }
   return {

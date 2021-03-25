@@ -2,11 +2,12 @@ const games = [] // FIXME this will eventually be a database. Make GameDAO a cla
 
 const GameDAO = {
   add: item => games.push(item),
-  clear: () => { games.splice(0, games.length) },
   delete: gameId => {
     const index = games.findIndex(item => item.id === gameId)
     if (index >= 0) {
       games.splice(index, 1)
+    } else {
+      console.error('Unable to delete game. Game not found:', gameId)
     }
   },
   get: gameId => games.find(game => game.id === gameId),

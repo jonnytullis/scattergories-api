@@ -1,6 +1,6 @@
 const { PubSub, gql } = require('apollo-server')
-const { GameDAO, PromptsDAO } = require('./dao')
-const { getAuth } = require('./authorization')
+const { GameDAO, PromptsDAO, AuthTokenDAO } = require('./dao')
+const { getAuthContext } = require('./authorization')
 
 // These are placeholders that get extended in each module typedef
 const typeDefs = gql`
@@ -18,13 +18,22 @@ const typeDefs = gql`
 const pubsub = new PubSub()
 
 module.exports = {
-  context: ({ req }) => {
-    const auth = getAuth(req)
+  context: ({ req, payload }) => {
+    // req is sent with queries and mutations, payload is sent with websocket subscriptions.
+    //    Either way, we need to get the current session ID
+    let sessionId
+    if (req) {
+      sessionId = req.headers.authorization?.split(' ')?.[1]
+    } else if (payload) {
+      sessionId = payload.sessionId
+    }
+
     return {
-      auth,
-      pubsub,
+      auth: getAuthContext(sessionId),
+      AuthTokenDAO,
       GameDAO,
-      PromptsDAO
+      PromptsDAO,
+      pubsub
     }
   },
   typeDefs,
