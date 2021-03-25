@@ -50,10 +50,12 @@ module.exports = gql`
     type CreateGamePayload {
         gameId: String!
         userId: ID!
+        sessionId: ID!
     }
     type JoinGamePayload {
         gameId: String!
         userId: ID!
+        sessionId: ID!
     }
     type LeaveGamePayload {
         success: Boolean!

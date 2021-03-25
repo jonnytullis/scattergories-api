@@ -15,12 +15,6 @@ function asyncIteratorWithCancel(asyncIterator, onCancel) {
   return asyncIterator
 }
 
-module.exports.games = {
-  subscribe: (_, args, { pubsub }) => {
-    return pubsub.asyncIterator([ 'GAME_CREATED' ])
-  }
-}
-
 module.exports.gameUpdated = {
   subscribe: withFilter(
     (_, { gameId, userId }, { pubsub, GameDAO }) => {

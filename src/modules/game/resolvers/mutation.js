@@ -2,7 +2,7 @@ const { ApolloError, UserInputError } = require('apollo-server')
 const { timer: timerSubscriptions } = require('../../timer/resolvers/subscription')
 const { createUser, generateGameId, generateDefaultSettings, getRandomLetter, getValidGame, mustBeHost } = require('../helpers')
 
-module.exports.createGame = (_, { hostName, gameName }, { pubsub, GameDAO, PromptsDAO }) => {
+module.exports.createGame = (_, { hostName, gameName }, { GameDAO, PromptsDAO, AuthTokenDAO }) => {
   const host = createUser(hostName, 0)
   const gameId = generateGameId()
   const game = {
@@ -18,24 +18,27 @@ module.exports.createGame = (_, { hostName, gameName }, { pubsub, GameDAO, Promp
   game.prompts = PromptsDAO.getRandomPrompts(game.settings.numPrompts)
 
   GameDAO.add(game)
-  pubsub.publish('GAME_CREATED', { games: GameDAO.getAll() })
+  const { sessionId } = AuthTokenDAO.add(host.id, game.id)
 
   return {
     gameId: game.id,
-    userId: host.id
+    userId: host.id,
+    sessionId
   }
 }
 
-module.exports.joinGame = (_, { gameId, userName }, { pubsub, GameDAO }) => {
+module.exports.joinGame = (_, { gameId, userName }, { pubsub, GameDAO, AuthTokenDAO }) => {
   const game = getValidGame(gameId, GameDAO)
   const user = createUser(userName, game.players?.length)
 
+  const { sessionId } = AuthTokenDAO.add(user.id, game.id)
   game.players.push(user)
   pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
 
   return {
     gameId: game.id,
-    userId: user.id
+    userId: user.id,
+    sessionId
   }
 }
 
