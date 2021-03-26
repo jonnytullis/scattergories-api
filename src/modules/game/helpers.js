@@ -25,13 +25,6 @@ module.exports.getValidGame = function (gameId, GameDAO) {
   return game
 }
 
-module.exports.mustBeHost = function (gameId, userId, GameDAO) {
-  let game = GameDAO.get(gameId)
-  if (game?.hostId !== userId) {
-    throw new ApolloError(`Unauthorized. Must be host to update game.`, '403')
-  }
-}
-
 function generateUserId () {
   return Math.random().toString(36).slice(2)
 }

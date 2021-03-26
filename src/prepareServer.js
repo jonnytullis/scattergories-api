@@ -28,8 +28,11 @@ module.exports = {
       sessionId = payload.sessionId
     }
 
+    // Get the auth context resources
+    const auth = getAuthContext(sessionId)
+
     return {
-      auth: getAuthContext(sessionId),
+      auth,
       AuthTokenDAO,
       GameDAO,
       PromptsDAO,

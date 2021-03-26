@@ -1,7 +1,7 @@
 const { ApolloError } = require('apollo-server')
 const { GameDAO } = require('../../../dao')
 
-const timers = {} // Timers live in memory. Map of active timers. Key=channel, value=timer
+const timers = {} // Timers live in memory. Map of active timers. Key=channel, value=timer TODO move to database
 module.exports.timer = {
   subscribe: (_, { gameId }, { pubsub }) => {
     const game = GameDAO.get(gameId)

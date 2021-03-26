@@ -1,6 +1,6 @@
 const { UserInputError } = require('apollo-server')
 const { timer: timerSubscriptions } = require('../../timer/resolvers/subscription')
-const { createUser, generateGameId, generateDefaultSettings, getRandomLetter, getValidGame, mustBeHost } = require('../helpers')
+const { createUser, generateGameId, generateDefaultSettings, getRandomLetter, getValidGame } = require('../helpers')
 
 module.exports.createGame = (_, { hostName, gameName }, { GameDAO, PromptsDAO, AuthTokenDAO }) => {
   const host = createUser(hostName, 0)
@@ -42,27 +42,36 @@ module.exports.joinGame = (_, { gameId, userName }, { pubsub, GameDAO, AuthToken
   }
 }
 
-module.exports.leaveGame = (_, { gameId, userId }, { auth, pubsub, AuthTokenDAO, GameDAO }) => {
-  auth.authorizeUser()
-  const game = getValidGame(gameId, GameDAO)
-  if (game?.hostId === userId) {
-    GameDAO.delete(gameId)
-    timerSubscriptions.deleteTimer(gameId)
-    const status = { gameId, message: 'Game ended by host', ended: true }
-    pubsub.publish('GAME_UPDATED', { gameUpdated: { status } })
-  } else {
-    GameDAO.removePlayer(gameId, userId)
-    AuthTokenDAO.delete(auth.sessionId)
-    pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
-  }
+module.exports.endGame = async (_, __, { auth, pubsub, AuthTokenDAO, GameDAO }) => {
+  const { game } = auth.authorizeHost()
+
+  const status = { gameId: game.id, message: 'Game ended by host', ended: true }
+  await pubsub.publish('GAME_UPDATED', { gameUpdated: { status } })
+
+  // Delete the game and data associated with the user
+  GameDAO.delete(game.id)
+  AuthTokenDAO.delete(auth.sessionId)
+  timerSubscriptions.deleteTimer(game.id)
+}
+
+module.exports.leaveGame = async (_, __, { auth, pubsub, AuthTokenDAO, GameDAO }) => {
+  let { game, user } = auth.authorizeUser()
+
+  // Delete data associated with the user
+  GameDAO.removePlayer(game.id, user.id)
+  AuthTokenDAO.delete(auth.sessionId)
+
+  // Get the updated game before publishing
+  game = GameDAO.get(game.id)
+  await pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
+
   return {
     success: true
   }
 }
 
-module.exports.newLetter = async (_, { gameId, userId }, { pubsub, GameDAO }) => {
-  let game = getValidGame(gameId, GameDAO)
-  mustBeHost(gameId, userId, GameDAO)
+module.exports.newLetter = async (_, __, { pubsub, auth, GameDAO }) => {
+  let { game } = auth.authorizeHost()
 
   // Don't allow the same letter as before
   let newLetter = getRandomLetter()
@@ -71,20 +80,20 @@ module.exports.newLetter = async (_, { gameId, userId }, { pubsub, GameDAO }) =>
   }
 
   GameDAO.setLetter(game.id, newLetter)
-  game = GameDAO.get(gameId)
+  game = GameDAO.get(game.id)
   await pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
+
   return {
     letter: game.letter
   }
 }
 
-module.exports.newPrompts = async (_, { gameId, userId }, { pubsub, GameDAO, PromptsDAO }) => {
-  let game = getValidGame(gameId, GameDAO)
-  mustBeHost(gameId, userId, GameDAO)
+module.exports.newPrompts = async (_, __, { auth, pubsub, GameDAO, PromptsDAO }) => {
+  let { game } = auth.authorizeHost()
 
   const prompts = PromptsDAO.getRandomPrompts(game.settings?.numPrompts)
-  GameDAO.setPrompts(gameId, prompts)
-  game = GameDAO.get(gameId)
+  GameDAO.setPrompts(game.id, prompts)
+  game = GameDAO.get(game.id)
   await pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
 
   return {
@@ -92,8 +101,8 @@ module.exports.newPrompts = async (_, { gameId, userId }, { pubsub, GameDAO, Pro
   }
 }
 
-module.exports.updateSettings = async (_, { gameId, userId, settings }, { pubsub, GameDAO }) => {
-  mustBeHost(gameId, userId, GameDAO)
+module.exports.updateSettings = async (_, { settings }, { auth, pubsub, GameDAO }) => {
+  let { game } = auth.authorizeHost()
 
   const newSettings = { ...settings }
   if (Number(settings.timerSeconds) < 30) {
@@ -105,9 +114,10 @@ module.exports.updateSettings = async (_, { gameId, userId, settings }, { pubsub
   if (Number(settings.numPrompts) < 1) {
     throw new UserInputError('Number of prompts must be greater than 1')
   }
-  GameDAO.updateSettings(gameId, newSettings)
 
-  let game = getValidGame(gameId, GameDAO)
+  GameDAO.updateSettings(game.id, newSettings)
+  game = GameDAO.get(game.id)
+
   await pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
   return game.settings
 }

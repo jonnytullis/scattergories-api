@@ -31,19 +31,18 @@ module.exports = gql`
     ########## GQL ##########
     extend type Query {
         games: [Game!]!
-        game(gameId: String!, userId: ID!): Game!
-        user(gameId: String!, userId: ID!): User!
+        user: User!
     }
     extend type Mutation {
         createGame(hostName: String!, gameName: String!): CreateGamePayload!
         joinGame(gameId: String!, userName: String!): JoinGamePayload!
-        leaveGame(gameId: String!, userId: ID!): LeaveGamePayload!
-        newLetter(gameId: String!, userId: ID!): NewLetterPayload!
-        newPrompts(gameId: String!, userId: ID!): NewPromptsPayload!
-        updateSettings(gameId: String!, userId: ID!, settings: SettingsInput!): Settings!
+        leaveGame: LeaveGamePayload!
+        newLetter: NewLetterPayload!
+        newPrompts: NewPromptsPayload!
+        updateSettings(settings: SettingsInput!): Settings!
     }
     extend type Subscription {
-        gameUpdated(gameId: String!, userId: ID!): GameUpdatedPayload!
+        gameUpdated(gameId: String!): GameUpdatedPayload!
     }
     
     ########## PAYLOADS ##########
