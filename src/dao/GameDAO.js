@@ -27,6 +27,12 @@ const GameDAO = {
       game.prompts = value
     }
   },
+  addPlayer: (gameId, player) => {
+    const game = games.find(game => game.id === gameId)
+    if (game) {
+      game.players.push(player)
+    }
+  },
   removePlayer: (gameId, userId) => {
     // Find the game
     const game = games.find(game => game.id === gameId)

@@ -1,4 +1,3 @@
-const { ApolloError } = require('apollo-server')
 
 module.exports.generateGameId = function () {
   return Math.random().toString(36).slice(2, 8).toUpperCase()
@@ -15,14 +14,6 @@ module.exports.generateDefaultSettings = function () {
     numRounds: 3,
     numPrompts: 12
   }
-}
-
-module.exports.getValidGame = function (gameId, GameDAO) {
-  let game = GameDAO.get(gameId)
-  if (!game) {
-    throw new ApolloError(`Game ID ${gameId} not found`, '404')
-  }
-  return game
 }
 
 function generateUserId () {

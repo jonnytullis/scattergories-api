@@ -1,5 +1,5 @@
-const { UserInputError } = require('apollo-server')
-const { createUser, generateGameId, generateDefaultSettings, getRandomLetter, getValidGame } = require('../helpers')
+const { UserInputError, ApolloError } = require('apollo-server')
+const { createUser, generateGameId, generateDefaultSettings, getRandomLetter } = require('../helpers')
 
 module.exports.createGame = (_, { hostName, gameName }, { GameDAO, PromptsDAO, AuthTokenDAO, TimerDAO }) => {
   const host = createUser(hostName, 0)
@@ -29,11 +29,16 @@ module.exports.createGame = (_, { hostName, gameName }, { GameDAO, PromptsDAO, A
 }
 
 module.exports.joinGame = (_, { gameId, userName }, { pubsub, GameDAO, AuthTokenDAO }) => {
-  const game = getValidGame(gameId, GameDAO)
-  const user = createUser(userName, game.players?.length)
+  let game = GameDAO.get(gameId)
+  if (!game) {
+    throw new ApolloError(`Game ID ${gameId} not found`)
+  }
 
+  const user = createUser(userName, game.players?.length)
   const { sessionId } = AuthTokenDAO.add(user.id, game.id)
-  game.players.push(user)
+  GameDAO.addPlayer(game.id, user)
+
+  game = GameDAO.get(game.id)
   pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
 
   return {
@@ -43,28 +48,27 @@ module.exports.joinGame = (_, { gameId, userName }, { pubsub, GameDAO, AuthToken
   }
 }
 
-module.exports.endGame = async (_, __, { auth, pubsub, AuthTokenDAO, GameDAO, TimerDAO }) => {
-  const { game } = auth.authorizeHost()
-
-  const status = { gameId: game.id, message: 'Game ended by host', ended: true }
-  await pubsub.publish('GAME_UPDATED', { gameUpdated: { status } })
-
-  // Delete the game and data associated with the user
-  GameDAO.delete(game.id)
-  AuthTokenDAO.delete(auth.sessionId)
-  TimerDAO.delete(game.id)
-}
-
-module.exports.leaveGame = async (_, __, { auth, pubsub, AuthTokenDAO, GameDAO }) => {
+module.exports.leaveGame = async (_, __, { auth, pubsub, AuthTokenDAO, GameDAO, TimerDAO }) => {
   let { game, user } = auth.authorizeUser()
+  const isHost = auth.isUserHost()
 
-  // Delete data associated with the user
-  GameDAO.removePlayer(game.id, user.id)
+  if (isHost) {
+    // Delete the game and data associated with the user
+    GameDAO.delete(game.id)
+    TimerDAO.delete(game.id)
+
+    const status = { gameId: game.id, message: 'Game ended by host', ended: true }
+    await pubsub.publish('GAME_UPDATED', { gameUpdated: { status } })
+  } else {
+    // Delete data associated with the user
+    GameDAO.removePlayer(game.id, user.id)
+
+    // Get the updated game before publishing
+    game = GameDAO.get(game.id)
+    await pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
+  }
+
   AuthTokenDAO.delete(auth.sessionId)
-
-  // Get the updated game before publishing
-  game = GameDAO.get(game.id)
-  await pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
 
   return {
     success: true

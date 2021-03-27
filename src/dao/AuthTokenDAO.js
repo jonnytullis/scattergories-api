@@ -24,11 +24,13 @@ const AuthTokenDAO = {
   },
   get: sessionId => authTokens.find(authToken => authToken.sessionId === sessionId),
   delete: sessionId => {
-    const index = authTokens.findIndex(authToken => authToken.id === sessionId)
-    if (index >= 0) {
-      authTokens.splice(index, 1)
-    } else {
-      console.error('Unable to delete authToken. Session ID not found:', sessionId)
+    if (sessionId) {
+      const index = authTokens.findIndex(authToken => authToken.id === sessionId)
+      if (index >= 0) {
+        authTokens.splice(index, 1)
+      } else {
+        console.error('Unable to delete authToken. Session ID not found:', sessionId)
+      }
     }
   }
 }
