@@ -1,8 +1,7 @@
 const { UserInputError } = require('apollo-server')
-const { timer: timerSubscriptions } = require('../../timer/resolvers/subscription')
 const { createUser, generateGameId, generateDefaultSettings, getRandomLetter, getValidGame } = require('../helpers')
 
-module.exports.createGame = (_, { hostName, gameName }, { GameDAO, PromptsDAO, AuthTokenDAO }) => {
+module.exports.createGame = (_, { hostName, gameName }, { GameDAO, PromptsDAO, AuthTokenDAO, TimerDAO }) => {
   const host = createUser(hostName, 0)
   const gameId = generateGameId()
   const game = {
@@ -19,6 +18,8 @@ module.exports.createGame = (_, { hostName, gameName }, { GameDAO, PromptsDAO, A
 
   GameDAO.add(game)
   const { sessionId } = AuthTokenDAO.add(host.id, game.id)
+
+  TimerDAO.add(game.id, game.settings?.timerSeconds || 180)
 
   return {
     gameId: game.id,
@@ -42,7 +43,7 @@ module.exports.joinGame = (_, { gameId, userName }, { pubsub, GameDAO, AuthToken
   }
 }
 
-module.exports.endGame = async (_, __, { auth, pubsub, AuthTokenDAO, GameDAO }) => {
+module.exports.endGame = async (_, __, { auth, pubsub, AuthTokenDAO, GameDAO, TimerDAO }) => {
   const { game } = auth.authorizeHost()
 
   const status = { gameId: game.id, message: 'Game ended by host', ended: true }
@@ -51,7 +52,7 @@ module.exports.endGame = async (_, __, { auth, pubsub, AuthTokenDAO, GameDAO }) 
   // Delete the game and data associated with the user
   GameDAO.delete(game.id)
   AuthTokenDAO.delete(auth.sessionId)
-  timerSubscriptions.deleteTimer(game.id)
+  TimerDAO.delete(game.id)
 }
 
 module.exports.leaveGame = async (_, __, { auth, pubsub, AuthTokenDAO, GameDAO }) => {

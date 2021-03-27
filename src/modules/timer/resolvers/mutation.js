@@ -1,28 +1,49 @@
 const { ApolloError } = require('apollo-server')
-const subscriptions = require('./subscription')
 
-module.exports.startTimer = (_, { gameId, userId }, { GameDAO }) => {
-  validateRequest(gameId, userId, GameDAO)
-  subscriptions.timer.startTimer(gameId)
-}
+const timerIntervals = {}
+module.exports.startTimer = (_, __, { auth, pubsub, TimerDAO }) => {
+  const { game } = auth.authorizeHost()
+  const timer = TimerDAO.get(game.id)
 
-module.exports.pauseTimer = (_, { gameId, userId }, { GameDAO }) => {
-  validateRequest(gameId, userId, GameDAO)
-  subscriptions.timer.pauseTimer(gameId)
-}
-
-module.exports.resetTimer = (_, { gameId, userId }, { GameDAO }) => {
-  validateRequest(gameId, userId, GameDAO)
-  subscriptions.timer.resetTimer(gameId)
-}
-
-/** Verifies that game exists and that user is host **/
-function validateRequest(gameId, userId, GameDAO) {
-  const game = GameDAO.get(gameId)
-  if (!game) {
-    throw new ApolloError(`Game ID ${gameId} not found`, '404')
+  if (!timer) {
+    throw new ApolloError(`Could not find associated timer for game: ${game.id}`)
   }
-  if (game.hostId !== userId) {
-    throw new ApolloError('Unauthorized', '403')
-  }
+
+  TimerDAO.update(game.id, { isRunning: true })
+  pubsub.publish('TIMER', { timer })
+
+  timerIntervals[game.id] = setInterval(() => {
+    if (timer.remaining > 0) {
+      timer.remaining--
+    } else {
+      clearInterval(timerIntervals[game.id])
+      timer.isRunning = false
+    }
+
+    TimerDAO.update(game.id, timer)
+    pubsub.publish('TIMER', { timer })
+  }, 1000)
+}
+
+module.exports.pauseTimer = (_, __, { auth, pubsub, TimerDAO }) => {
+  const { game } = auth.authorizeHost()
+  const timer = TimerDAO.get(game.id)
+
+  clearInterval(timerIntervals[game.id])
+  timer.isRunning = false
+  TimerDAO.update(game.id, timer)
+
+  pubsub.publish('TIMER', { timer })
+}
+
+module.exports.resetTimer = (_, __, { auth, pubsub, TimerDAO }) => {
+  const { game } = auth.authorizeHost()
+  const timer = TimerDAO.get(game.id)
+
+  clearInterval(timerIntervals[game.id])
+  timer.isRunning = false
+  timer.remaining = game.settings?.timerSeconds || timer.seconds
+  TimerDAO.update(game.id, timer)
+
+  pubsub.publish('TIMER', { timer })
 }

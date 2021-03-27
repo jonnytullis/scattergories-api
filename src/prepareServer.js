@@ -1,5 +1,5 @@
 const { PubSub, gql } = require('apollo-server')
-const { GameDAO, PromptsDAO, AuthTokenDAO } = require('./dao')
+const { GameDAO, PromptsDAO, AuthTokenDAO, TimerDAO } = require('./dao')
 const { getAuthContext } = require('./authorization')
 
 // These are placeholders that get extended in each module typedef
@@ -25,7 +25,7 @@ module.exports = {
     if (req) {
       sessionId = req.headers.authorization?.split(' ')?.[1]
     } else if (payload) {
-      sessionId = payload.sessionId
+      sessionId = payload.authorization?.split(' ')?.[1]
     }
 
     // Get the auth context resources
@@ -36,6 +36,7 @@ module.exports = {
       AuthTokenDAO,
       GameDAO,
       PromptsDAO,
+      TimerDAO,
       pubsub
     }
   },
