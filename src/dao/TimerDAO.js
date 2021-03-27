@@ -14,14 +14,16 @@ const TimerDAO = {
     delete timers[gameId]
   },
   update: (gameId, { seconds, isRunning, remaining }) => {
-    if (typeof seconds === 'number' || typeof seconds === 'string') {
-      timers[gameId].seconds = seconds
-    }
-    if (typeof remaining === 'number' || typeof remaining === 'string') {
-      timers[gameId].remaining = remaining
-    }
-    if (typeof isRunning === 'boolean') {
-      timers[gameId].isRunning = isRunning
+    if (timers[gameId]) {
+      if (typeof seconds === 'number' || typeof seconds === 'string') {
+        timers[gameId].seconds = seconds
+      }
+      if (typeof remaining === 'number' || typeof remaining === 'string') {
+        timers[gameId].remaining = remaining
+      }
+      if (typeof isRunning === 'boolean') {
+        timers[gameId].isRunning = isRunning
+      }
     }
   }
 }
