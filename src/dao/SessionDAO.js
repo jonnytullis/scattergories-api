@@ -1,6 +1,6 @@
 const { DynamoDB: ddb } = require('./DynamoDB')
 
-const TableName = process.env.NODE_ENV === 'development' ? 'scattergories-session-dev' : 'scattergories-session'
+const TableName = process.env.NODE_ENV === 'development' ? 'scattergories-session-dev' : 'scattergories-session-prd'
 
 function generateSessionId() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {

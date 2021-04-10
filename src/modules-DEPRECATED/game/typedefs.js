@@ -33,7 +33,6 @@ module.exports = gql`
         user: User!
     }
     extend type Mutation {
-        createGame(hostName: String!, gameName: String!): CreateGamePayload!
         joinGame(gameId: String!, userName: String!): JoinGamePayload!
         leaveGame: LeaveGamePayload!
         newLetter: NewLetterPayload!
@@ -45,11 +44,6 @@ module.exports = gql`
     }
     
     ########## PAYLOADS ##########
-    type CreateGamePayload {
-        gameId: String!
-        userId: ID!
-        sessionId: ID!
-    }
     type JoinGamePayload {
         gameId: String!
         userId: ID!

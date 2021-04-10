@@ -1,6 +1,6 @@
 const { DynamoDB: ddb } = require('./DynamoDB')
 
-const TableName = process.env.NODE_ENV === 'development' ? 'scattergories-game-dev' : 'scattergories-game'
+const TableName = process.env.NODE_ENV === 'development' ? 'scattergories-game-dev' : 'scattergories-game-prd'
 
 const GameDAO = {
   addGame: item => new Promise((resolve, reject) => {
@@ -32,7 +32,7 @@ const GameDAO = {
       if (err) {
         reject(err)
       }
-      resolve(data)
+      resolve(data.Item)
     })
   }),
   // getAll: () => JSON.parse(JSON.stringify(games)),
@@ -51,12 +51,24 @@ const GameDAO = {
   //     game.prompts = value
   //   }
   // },
-  // addPlayer: (gameId, player) => {
-  //   const game = games.find(game => game.id === gameId)
-  //   if (game) {
-  //     game.players.push(player)
-  //   }
-  // },
+  addPlayer: (gameId, player) => new Promise((resolve, reject) => {
+    ddb.update({
+      TableName: 'scattergories-game-dev',
+      Key: {
+        id: gameId
+      },
+      UpdateExpression: 'set players = list_append(players, :newPlayers)',
+      ExpressionAttributeValues: {
+        ':newPlayers': [ player ]
+      },
+      ReturnValues: 'UPDATED_NEW'
+    }, (err, data) => {
+      if (err) {
+        reject(err)
+      }
+      resolve(data.Attributes?.players)
+    })
+  }),
   // removePlayer: (gameId, userId) => {
   //   // Find the game
   //   const game = games.find(game => game.id === gameId)

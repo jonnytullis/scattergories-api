@@ -37,25 +37,25 @@ const { createUser, generateGameId, getDefaultSettings, getRandomLetter } = requ
 //   }
 // }
 
-module.exports.joinGame = (_, { gameId, userName }, { pubsub, GameDAO, SessionDAO }) => {
-  let game = GameDAO.get(gameId)
-  if (!game) {
-    throw new ApolloError(`Game ID ${gameId} not found`)
-  }
-
-  const user = createUser(userName, game.players?.length)
-  const { sessionId } = SessionDAO.add(user.id, game.id)
-  GameDAO.addPlayer(game.id, user)
-
-  game = GameDAO.get(game.id)
-  pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
-
-  return {
-    gameId: game.id,
-    userId: user.id,
-    sessionId
-  }
-}
+// module.exports.joinGame = (_, { gameId, userName }, { pubsub, GameDAO, SessionDAO }) => {
+//   let game = GameDAO.get(gameId)
+//   if (!game) {
+//     throw new ApolloError(`Game ID ${gameId} not found`)
+//   }
+//
+//   const user = createUser(userName, game.players?.length)
+//   const { sessionId } = SessionDAO.add(user.id, game.id)
+//   GameDAO.addPlayer(game.id, user)
+//
+//   game = GameDAO.get(game.id)
+//   pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
+//
+//   return {
+//     gameId: game.id,
+//     userId: user.id,
+//     sessionId
+//   }
+// }
 
 module.exports.leaveGame = async (_, __, { auth, pubsub, SessionDAO, GameDAO, TimerDAO }) => {
   let { game, user } = auth.authorizeUser()
