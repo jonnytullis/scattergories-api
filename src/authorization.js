@@ -1,10 +1,10 @@
 const { ForbiddenError } = require('apollo-server')
-const { AuthTokenDAO, GameDAO } = require('./dao')
+const { SessionDAO, GameDAO } = require('./dao')
 
 module.exports.getAuthContext = (sessionId) => {
   const getSessionData = () => {
-    const authToken = AuthTokenDAO.get(sessionId)
-    const game = GameDAO.get(authToken?.gameId)
+    const authToken = SessionDAO.get(sessionId)
+    const game = GameDAO.getGame(authToken?.gameId)
     const user = game?.players?.find(player => player.id === authToken?.userId)
 
     return { authToken, game, user }

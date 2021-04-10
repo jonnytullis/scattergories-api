@@ -8,13 +8,10 @@ module.exports.getRandomLetter = function () {
   return alphabet[Math.floor(Math.random() * alphabet.length)]
 }
 
-module.exports.generateDefaultSettings = function () {
-  return {
-    timerSeconds: 180,
-    numRounds: 3,
-    numPrompts: 12
-  }
-}
+module.exports.getDefaultSettings = () => ({
+  timerSeconds: 180,
+  numPrompts: 12
+})
 
 function generateUserId () {
   return Math.random().toString(36).slice(2)

@@ -19,7 +19,6 @@ module.exports = gql`
     }
     type Settings {
         timerSeconds: Int!
-        numRounds: Int!
         numPrompts: Int!
     }
     input SettingsInput {

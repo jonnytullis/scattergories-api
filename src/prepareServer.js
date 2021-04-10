@@ -1,19 +1,26 @@
 const { PubSub, gql } = require('apollo-server')
-const { GameDAO, PromptsDAO, AuthTokenDAO, TimerDAO } = require('./dao')
+
+const queries = require('./queries')
+const mutations = require('./mutations')
+const types = require('./types')
+const { GameDAO, PromptsDAO, SessionDAO, TimerDAO } = require('./dao')
 const { getAuthContext } = require('./authorization')
 
 // These are placeholders that get extended in each module typedef
-const typeDefs = gql`
-    type Query {
-        root: String
-    }
-    type Mutation {
-        root: String
-    }
-    type Subscription {
-        root: String
-    }
+const typeDefsString = `
+  ${types}
+  ${mutations.typeDefs}
+  ${mutations.mutations}
+  ${queries.typeDefs}
+  ${queries.queries}
 `
+
+const typeDefs = gql(typeDefsString)
+
+const resolvers = {
+  Query: { ...queries.resolvers },
+  Mutation: { ...mutations.resolvers }
+}
 
 const pubsub = new PubSub()
 
@@ -33,7 +40,7 @@ module.exports = {
 
     return {
       auth,
-      AuthTokenDAO,
+      SessionDAO,
       GameDAO,
       PromptsDAO,
       TimerDAO,
@@ -41,8 +48,5 @@ module.exports = {
     }
   },
   typeDefs,
-  modules: [
-    require('./modules/game'),
-    require('./modules/timer')
-  ]
+  resolvers,
 }

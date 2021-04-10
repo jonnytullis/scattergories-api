@@ -1,8 +1,8 @@
 const { ApolloServer } = require('apollo-server')
-const { modules, typeDefs, context } = require('./prepareServer')
+const { resolvers, typeDefs, context } = require('./prepareServer')
 
 const server = new ApolloServer({
-  modules,
+  resolvers,
   typeDefs,
   context
 })
