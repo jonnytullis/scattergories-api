@@ -19,7 +19,7 @@ const GameDAO = {
   deleteGame: gameId => new Promise((resolve, reject) => {
     const params = {
       TableName,
-      key: {
+      Key: {
         id: gameId
       }
     }

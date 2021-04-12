@@ -1,5 +1,3 @@
-const { ApolloError } = require('apollo-server')
-
 const gql = require('../../../gql')
 
 const mutation = gql`
@@ -26,7 +24,7 @@ const resolver = {
         // Notify anyone who is actively subscribed to the game
         const status = { gameId: game.id, message: 'Game ended by host', ended: true }
 
-        await SessionDAO.deleteSession(auth.session.id)
+        await SessionDAO.deleteGameSessions(game.id)
 
         await pubsub.publish('GAME_UPDATED', { gameUpdated: { status } })
       } else {

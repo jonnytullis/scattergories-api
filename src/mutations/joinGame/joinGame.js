@@ -17,6 +17,7 @@ const typeDefs = gql`
 
 const resolver = {
   async joinGame (_, { gameId, userName }, { pubsub, GameDAO, SessionDAO }) {
+    // TODO: enforce max 20 players
     let game = await GameDAO.getGame(gameId)
     if (!game) {
       throw new ValidationError(`Game ID ${gameId} does not exist`)
