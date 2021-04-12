@@ -26,7 +26,19 @@ const SessionDAO = {
       resolve(session)
     })
   }),
-  // get: sessionId => authTokens.find(authToken => authToken.sessionId === sessionId),
+  getSession: sessionId => new Promise((resolve, reject) => {
+    ddb.get({
+      TableName,
+      Key: {
+        id: sessionId
+      }
+    }, (err, data) => {
+      if (err) {
+        reject(err)
+      }
+      resolve(data?.Item)
+    })
+  }),
   // delete: sessionId => {
   //   if (sessionId) {
   //     const index = authTokens.findIndex(authToken => authToken.id === sessionId)

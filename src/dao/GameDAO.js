@@ -32,7 +32,7 @@ const GameDAO = {
       if (err) {
         reject(err)
       }
-      resolve(data.Item)
+      resolve(data?.Item)
     })
   }),
   // getAll: () => JSON.parse(JSON.stringify(games)),
