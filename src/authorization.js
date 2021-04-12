@@ -4,12 +4,14 @@ const { SessionDAO, GameDAO } = require('./dao')
 module.exports.getAuthContext = async (sessionId) => {
   let session, game, user
 
-  try {
-    session = await SessionDAO.getSession(sessionId)
-    game = await GameDAO.getGame(session?.gameId)
-    user = game?.players?.find(player => player.id === session?.userId)
-  } catch(e) {
-    console.error('Error retrieving session data for sessionID:', sessionId)
+  if (sessionId) {
+    try {
+      session = await SessionDAO.getSession(sessionId)
+      game = await GameDAO.getGame(session?.gameId)
+      user = game?.players?.find(player => player.id === session?.userId)
+    } catch(e) {
+      console.error('Error retrieving session data for sessionID:', sessionId)
+    }
   }
 
   const authorizeUser = () => {

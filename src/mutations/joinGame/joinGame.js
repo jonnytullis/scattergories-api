@@ -4,11 +4,11 @@ const gql = require('../../../gql')
 const { createUser } = require('../../modules-DEPRECATED/game/helpers')
 
 const mutation = gql`
-    joinGame(gameId: String!, userName: String!): JoinGameResponse!
+    joinGame(gameId: String!, userName: String!): JoinGamePayload!
 `
 
 const typeDefs = gql`
-    type JoinGameResponse {
+    type JoinGamePayload {
         gameId: String!
         userId: ID!
         sessionId: ID!
@@ -23,7 +23,7 @@ const resolver = {
     }
 
     const user = createUser(userName, game.players?.length)
-    const { sessionId } = SessionDAO.createSession(user.id, game.id)
+    const session = await SessionDAO.createSession(user.id, game.id)
     try {
       game.players = await GameDAO.addPlayer(game.id, user)
     } catch(e) {
@@ -35,7 +35,7 @@ const resolver = {
     return {
       gameId: game.id,
       userId: user.id,
-      sessionId
+      sessionId: session.id
     }
   }
 }

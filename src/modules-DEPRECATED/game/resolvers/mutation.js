@@ -57,32 +57,32 @@ const { createUser, generateGameId, getDefaultSettings, getRandomLetter } = requ
 //   }
 // }
 
-module.exports.leaveGame = async (_, __, { auth, pubsub, SessionDAO, GameDAO, TimerDAO }) => {
-  let { game, user } = auth.authorizeUser()
-  const isHost = auth.isUserHost()
-
-  if (isHost) {
-    // Delete the game and data associated with the user
-    GameDAO.delete(game.id)
-    TimerDAO.delete(game.id)
-
-    const status = { gameId: game.id, message: 'Game ended by host', ended: true }
-    await pubsub.publish('GAME_UPDATED', { gameUpdated: { status } })
-  } else {
-    // Delete data associated with the user
-    GameDAO.removePlayer(game.id, user.id)
-
-    // Get the updated game before publishing
-    game = GameDAO.get(game.id)
-    await pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
-  }
-
-  SessionDAO.delete(auth.sessionId)
-
-  return {
-    success: true
-  }
-}
+// module.exports.leaveGame = async (_, __, { auth, pubsub, SessionDAO, GameDAO, TimerDAO }) => {
+//   let { game, user } = auth.authorizeUser()
+//   const isHost = auth.isUserHost()
+//
+//   if (isHost) {
+//     // Delete the game and data associated with the user
+//     GameDAO.delete(game.id)
+//     TimerDAO.delete(game.id)
+//
+//     const status = { gameId: game.id, message: 'Game ended by host', ended: true }
+//     await pubsub.publish('GAME_UPDATED', { gameUpdated: { status } })
+//   } else {
+//     // Delete data associated with the user
+//     GameDAO.removePlayer(game.id, user.id)
+//
+//     // Get the updated game before publishing
+//     game = GameDAO.get(game.id)
+//     await pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
+//   }
+//
+//   SessionDAO.delete(auth.sessionId)
+//
+//   return {
+//     success: true
+//   }
+// }
 
 module.exports.newLetter = async (_, __, { pubsub, auth, GameDAO }) => {
   let { game } = auth.authorizeHost()

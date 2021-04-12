@@ -4,11 +4,11 @@ const gql = require('../../../gql')
 const { createUser, generateGameId, getDefaultSettings, getRandomLetter } = require('../../modules-DEPRECATED/game/helpers')
 
 const mutation = gql`
-    createGame(hostName: String!, gameName: String!): CreateGameResponse!
+    createGame(hostName: String!, gameName: String!): CreateGamePayload!
 `
 
 const typeDefs = gql`
-    type CreateGameResponse {
+    type CreateGamePayload {
         gameId: String!
         userId: ID!
         sessionId: ID!

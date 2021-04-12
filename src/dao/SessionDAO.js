@@ -16,10 +16,13 @@ const SessionDAO = {
       userId,
       gameId
     }
-    ddb.put({
+
+    const params = {
       TableName,
       Item: session
-    }, function(err) {
+    }
+
+    ddb.put(params, (err) => {
       if (err) {
         reject(err)
       }
@@ -27,29 +30,36 @@ const SessionDAO = {
     })
   }),
   getSession: sessionId => new Promise((resolve, reject) => {
-    ddb.get({
+    const params = {
       TableName,
       Key: {
         id: sessionId
       }
-    }, (err, data) => {
+    }
+
+    ddb.get(params, (err, data) => {
       if (err) {
         reject(err)
       }
       resolve(data?.Item)
     })
   }),
-  // delete: sessionId => {
-  //   if (sessionId) {
-  //     const index = authTokens.findIndex(authToken => authToken.id === sessionId)
-  //     if (index >= 0) {
-  //       authTokens.splice(index, 1)
-  //     } else {
-  //       console.error('Unable to delete authToken. Session ID not found:', sessionId)
-  //     }
-  //   }
-  // }
+  deleteSession: sessionId => new Promise((resolve, reject) => {
+    const params = {
+      TableName,
+      Key: {
+        id: sessionId
+      }
+    }
+
+    ddb.delete(params, (err, data) => {
+      if (err) {
+        reject(err)
+      }
+      resolve(data?.Item)
+    })
+  })
 }
 
-Object.freeze(SessionDAO) // Singleton for now to preserve state. This will change when using a database
+Object.freeze(SessionDAO) // Singleton
 module.exports = SessionDAO

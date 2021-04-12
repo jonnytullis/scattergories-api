@@ -4,31 +4,42 @@ const TableName = process.env.NODE_ENV === 'development' ? 'scattergories-game-d
 
 const GameDAO = {
   addGame: item => new Promise((resolve, reject) => {
-    ddb.put({
+    const params = {
       TableName,
       Item: item
-    }, function(err) {
+    }
+
+    ddb.put(params, (err) => {
       if (err) {
         reject(err)
       }
       resolve()
     })
   }),
-  // deleteGame: gameId => {
-  //   const index = games.findIndex(item => item.id === gameId)
-  //   if (index >= 0) {
-  //     games.splice(index, 1)
-  //   } else {
-  //     console.error('Unable to delete game. Game not found:', gameId)
-  //   }
-  // },
+  deleteGame: gameId => new Promise((resolve, reject) => {
+    const params = {
+      TableName,
+      key: {
+        id: gameId
+      }
+    }
+
+    ddb.delete(params, (err, data) => {
+      if (err) {
+        reject(err)
+      }
+      resolve(data?.Item)
+    })
+  }),
   getGame: gameId => new Promise((resolve, reject) => {
-    ddb.get({
+    const params = {
       TableName,
       Key: {
         id: gameId
       }
-    }, (err, data) => {
+    }
+
+    ddb.get(params, (err, data) => {
       if (err) {
         reject(err)
       }
@@ -52,34 +63,46 @@ const GameDAO = {
   //   }
   // },
   addPlayer: (gameId, player) => new Promise((resolve, reject) => {
-    ddb.update({
-      TableName: 'scattergories-game-dev',
+    const params = {
+      TableName,
       Key: {
         id: gameId
       },
-      UpdateExpression: 'set players = list_append(players, :newPlayers)',
+      UpdateExpression: 'SET players = list_append(players, :newPlayers)',
       ExpressionAttributeValues: {
         ':newPlayers': [ player ]
       },
       ReturnValues: 'UPDATED_NEW'
-    }, (err, data) => {
+    }
+
+    ddb.update(params, (err, data) => {
       if (err) {
         reject(err)
       }
-      resolve(data.Attributes?.players)
+      resolve(data?.Attributes?.players)
     })
   }),
-  // removePlayer: (gameId, userId) => {
-  //   // Find the game
-  //   const game = games.find(game => game.id === gameId)
-  //   if (game) {
-  //     // Remove the player from the game player list
-  //     const playerIndex = game.players.findIndex(user => user.id === userId)
-  //     if (playerIndex >= 0) {
-  //       game.players.splice(playerIndex, 1)
-  //     }
-  //   }
-  // },
+  removePlayer: (gameId, playerIndex) => new Promise((resolve, reject) => {
+    if (!playerIndex) {
+      throw new Error('Invalid player index')
+    }
+
+    const params = {
+      TableName,
+      Key: {
+        id: gameId
+      },
+      UpdateExpression: `REMOVE players[${playerIndex}]`,
+      ReturnValues: 'ALL_NEW'
+    }
+
+    ddb.update(params, (err, data) => {
+      if (err) {
+        reject(err)
+      }
+      resolve(data?.Attributes?.players)
+    })
+  }),
   // updateSettings: (gameId, settings) => {
   //   const game = games.find(game => game.id === gameId)
   //   if (game) {
@@ -88,4 +111,5 @@ const GameDAO = {
   // },
 }
 
+Object.freeze(GameDAO) // Singleton
 module.exports = GameDAO

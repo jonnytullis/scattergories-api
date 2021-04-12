@@ -13,7 +13,6 @@ module.exports = gql`
         user: User!
     }
     extend type Mutation {
-        leaveGame: LeaveGamePayload!
         newLetter: NewLetterPayload!
         newPrompts: NewPromptsPayload!
         updateSettings(settings: SettingsInput!): Settings!
@@ -22,9 +21,6 @@ module.exports = gql`
     }
     
     ########## PAYLOADS ##########
-    type LeaveGamePayload {
-        success: Boolean!
-    }
     type NewLetterPayload {
         letter: String!
     }
