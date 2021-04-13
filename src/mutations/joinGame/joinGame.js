@@ -1,7 +1,7 @@
 const { ValidationError, ApolloError } = require('apollo-server')
 
 const gql = require('../../../gql')
-const { createUser } = require('../createGame/helpers')
+const { createUser } = require('../../helpers/gameHelpers')
 
 const mutation = gql`
     joinGame(gameId: String!, userName: String!): JoinGamePayload!

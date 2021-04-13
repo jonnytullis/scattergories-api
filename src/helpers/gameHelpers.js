@@ -1,13 +1,4 @@
 
-module.exports.generateGameId = function () {
-  return Math.random().toString(36).slice(2, 8).toUpperCase()
-}
-
-module.exports.getDefaultSettings = () => ({
-  timerSeconds: 180,
-  numPrompts: 12
-})
-
 function generateUserId () {
   return Math.random().toString(36).slice(2)
 }
@@ -31,4 +22,18 @@ module.exports.createUser = function (name, numPlayers = 0) {
     name: name,
     color: colors[numPlayers % colors.length] // Cycle through avatar colors
   }
+}
+
+module.exports.generateGameId = () => {
+  return Math.random().toString(36).slice(2, 8).toUpperCase()
+}
+
+module.exports.getDefaultSettings = () => ({
+  timerSeconds: 180,
+  numPrompts: 12
+})
+
+module.exports.getRandomLetter = () => {
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  return alphabet[Math.floor(Math.random() * alphabet.length)]
 }

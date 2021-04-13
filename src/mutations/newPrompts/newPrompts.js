@@ -1,6 +1,7 @@
 const { ApolloError } = require('apollo-server')
 
 const gql = require('../../../gql')
+const { getRandomPrompts } = require('../../helpers/promptHelpers')
 
 const mutation = gql`
     newPrompts: NewPromptsPayload!
@@ -15,7 +16,7 @@ const typeDefs = gql`
 const resolver = {
   async newPrompts (_, __, { auth, pubsub, dataSources }) {
     let { game } = auth.authorizeHost()
-    const prompts = dataSources.PromptsDAO.getRandomPrompts(game.settings?.numPrompts)
+    const prompts = getRandomPrompts(game.settings?.numPrompts)
 
     try {
       game.prompts = await dataSources.GameDAO.updateGame(game.id, 'prompts', prompts)

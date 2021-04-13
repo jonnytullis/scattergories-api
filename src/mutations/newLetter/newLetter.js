@@ -1,11 +1,7 @@
 const { ApolloError } = require('apollo-server')
 
 const gql = require('../../../gql')
-
-function getRandomLetter() {
-  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-  return alphabet[Math.floor(Math.random() * alphabet.length)]
-}
+const { getRandomLetter } = require('../../helpers/gameHelpers')
 
 const mutation = gql`
     newLetter: NewLetterPayload!
