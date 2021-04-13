@@ -3,7 +3,7 @@ const { withFilter } = require('apollo-server')
 const gql = require('../../../gql')
 
 const subscription = gql`
-    gameUpdated(gameId: String!): GameUpdatedResponse!
+    gameUpdated(gameId: ID!): GameUpdatedResponse!
 `
 
 const typeDefs = gql`
@@ -12,7 +12,7 @@ const typeDefs = gql`
         status: Status
     }
     type Status {
-        gameId: String!
+        gameId: ID!
         ended: Boolean
         message: String
     }

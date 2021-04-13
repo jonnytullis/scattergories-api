@@ -18,7 +18,8 @@ const resolver = {
     const { game } = auth.authorizeHost()
 
     try {
-      game.letter = await dataSources.GameDAO.updateGame(game.id, 'letter', getRandomLetter())
+      const letter = getRandomLetter()
+      game.letter = await dataSources.GameDAO.updateGame(game.id, 'letter', letter)
     } catch(e) {
       throw new ApolloError('Error updating letter')
     }

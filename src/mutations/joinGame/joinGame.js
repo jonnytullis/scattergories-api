@@ -4,12 +4,12 @@ const gql = require('../../../gql')
 const { createUser } = require('../../helpers/gameHelpers')
 
 const mutation = gql`
-    joinGame(gameId: String!, userName: String!): JoinGamePayload!
+    joinGame(gameId: ID!, userName: String!): JoinGamePayload!
 `
 
 const typeDefs = gql`
     type JoinGamePayload {
-        gameId: String!
+        gameId: ID!
         userId: ID!
         sessionId: ID!
     }

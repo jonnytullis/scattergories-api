@@ -2,6 +2,7 @@ const { ValidationError, ApolloError } = require('apollo-server')
 
 const gql = require('../../../gql')
 const { createUser, generateGameId, getDefaultSettings, getRandomLetter } = require('../../helpers/gameHelpers')
+const { getRandomPrompts } = require('../../helpers/promptHelpers')
 
 const mutation = gql`
     createGame(hostName: String!, gameName: String!): CreateGamePayload!
@@ -9,7 +10,7 @@ const mutation = gql`
 
 const typeDefs = gql`
     type CreateGamePayload {
-        gameId: String!
+        gameId: ID!
         userId: ID!
         sessionId: ID!
     }
@@ -33,7 +34,7 @@ const resolver = {
       settings: getDefaultSettings(),
     }
 
-    game.prompts = dataSources.PromptsDAO.getRandomPrompts(game.settings.numPrompts)
+    game.prompts = getRandomPrompts(game.settings.numPrompts)
 
     let session
     try {

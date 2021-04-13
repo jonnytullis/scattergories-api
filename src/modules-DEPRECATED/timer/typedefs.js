@@ -7,7 +7,7 @@ module.exports = gql`
         isRunning: Boolean!
     }
     extend type Subscription {
-        timer(gameId: String!): Timer!
+        timer(gameId: ID!): Timer!
     }
     extend type Mutation {
         startTimer: Timer
