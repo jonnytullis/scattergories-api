@@ -18,18 +18,19 @@ const typeDefs = gql`
 `
 
 const resolver = {
-  async newLetter (_, __, { auth, GameDAO }) {
+  async newLetter (_, __, { auth, pubsub, GameDAO }) {
     const { game } = auth.authorizeHost()
 
-    let newLetter
     try {
-      newLetter = await GameDAO.updateLetter(game.id, getRandomLetter())
+      game.letter = await GameDAO.updateLetter(game.id, getRandomLetter())
     } catch(e) {
       throw new ApolloError('Error updating letter')
     }
 
+    await pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
+
     return {
-      letter: newLetter
+      letter: game.letter
     }
   }
 }

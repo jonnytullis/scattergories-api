@@ -84,23 +84,23 @@ const { createUser, generateGameId, getDefaultSettings, getRandomLetter } = requ
 //   }
 // }
 
-module.exports.newLetter = async (_, __, { pubsub, auth, GameDAO }) => {
-  let { game } = auth.authorizeHost()
-
-  // Don't allow the same letter as before
-  let newLetter = getRandomLetter()
-  while (newLetter === game.letter) {
-    newLetter = getRandomLetter()
-  }
-
-  GameDAO.setLetter(game.id, newLetter)
-  game = GameDAO.get(game.id)
-  await pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
-
-  return {
-    letter: game.letter
-  }
-}
+// module.exports.newLetter = async (_, __, { pubsub, auth, GameDAO }) => {
+//   let { game } = auth.authorizeHost()
+//
+//   // Don't allow the same letter as before
+//   let newLetter = getRandomLetter()
+//   while (newLetter === game.letter) {
+//     newLetter = getRandomLetter()
+//   }
+//
+//   GameDAO.setLetter(game.id, newLetter)
+//   game = GameDAO.get(game.id)
+//   await pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
+//
+//   return {
+//     letter: game.letter
+//   }
+// }
 
 module.exports.newPrompts = async (_, __, { auth, pubsub, GameDAO, PromptsDAO }) => {
   let { game } = auth.authorizeHost()
