@@ -1,7 +1,7 @@
 const { ValidationError, ApolloError } = require('apollo-server')
 
 const gql = require('../../../gql')
-const { createUser, generateGameId, getDefaultSettings, getRandomLetter } = require('../../modules-DEPRECATED/game/helpers')
+const { createUser, generateGameId, getDefaultSettings, getRandomLetter } = require('./helpers')
 
 const mutation = gql`
     createGame(hostName: String!, gameName: String!): CreateGamePayload!
@@ -18,7 +18,7 @@ const typeDefs = gql`
 const resolver = {
   async createGame (_, { hostName, gameName }, { dataSources }) {
     if (!hostName || !gameName) {
-      throw new ValidationError('"hostName" and "gameName" are required fields.')
+      throw new ValidationError('"hostName" and "gameName" are required')
     }
 
     const host = createUser(hostName, 0)
