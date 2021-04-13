@@ -3,7 +3,7 @@ const { DynamoDB: ddb } = require('./DynamoDB')
 const TableName = process.env.NODE_ENV === 'development' ? 'scattergories-game-dev' : 'scattergories-game-prd'
 
 const GameDAO = {
-  addGame: item => new Promise((resolve, reject) => {
+  putGame: item => new Promise((resolve, reject) => {
     const params = {
       TableName,
       Item: item
@@ -103,6 +103,30 @@ const GameDAO = {
       resolve(data?.Attributes?.players)
     })
   }),
+  updateLetter: (gameId, letter) => new Promise((resolve, reject) => {
+    if (typeof letter !== 'string') {
+      throw new Error('Letter must be of type string')
+    }
+
+    const params = {
+      TableName,
+      Key: {
+        id: gameId
+      },
+      UpdateExpression: 'SET letter = :letter',
+      ExpressionAttributeValues: {
+        ':letter': letter
+      },
+      ReturnValued: 'UPDATED_NEW'
+    }
+
+    ddb.update(params, (err, data) => {
+      if (err) {
+        reject(err)
+      }
+      resolve(data?.Attributes?.letter)
+    })
+  })
   // updateSettings: (gameId, settings) => {
   //   const game = games.find(game => game.id === gameId)
   //   if (game) {

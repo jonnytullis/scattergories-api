@@ -37,7 +37,7 @@ const resolver = {
 
     let session
     try {
-      await GameDAO.addGame(game)
+      await GameDAO.putGame(game)
       session = await SessionDAO.createSession(host.id, game.id)
     } catch(e) {
       throw new ApolloError('Failed to create game.')
