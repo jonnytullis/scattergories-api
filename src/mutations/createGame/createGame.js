@@ -16,7 +16,7 @@ const typeDefs = gql`
 `
 
 const resolver = {
-  async createGame (_, { hostName, gameName }, { GameDAO, PromptsDAO, SessionDAO, TimerDAO }) {
+  async createGame (_, { hostName, gameName }, { dataSources }) {
     if (!hostName || !gameName) {
       throw new ValidationError('"hostName" and "gameName" are required fields.')
     }
@@ -33,17 +33,17 @@ const resolver = {
       settings: getDefaultSettings(),
     }
 
-    game.prompts = PromptsDAO.getRandomPrompts(game.settings.numPrompts)
+    game.prompts = dataSources.PromptsDAO.getRandomPrompts(game.settings.numPrompts)
 
     let session
     try {
-      await GameDAO.putGame(game)
-      session = await SessionDAO.createSession(host.id, game.id)
+      await dataSources.GameDAO.putGame(game)
+      session = await dataSources.SessionDAO.createSession(host.id, game.id)
     } catch(e) {
       throw new ApolloError('Failed to create game.')
     }
 
-    TimerDAO.add(game.id, game.settings.timerSeconds)
+    dataSources.TimerDAO.add(game.id, game.settings.timerSeconds)
 
     return {
       gameId: game.id,

@@ -42,12 +42,16 @@ module.exports = {
     // Get the auth context resources
     const auth = await getAuthContext(sessionId)
 
-    return {
-      auth,
+    const dataSources = {
       SessionDAO,
       GameDAO,
       PromptsDAO,
-      TimerDAO,
+      TimerDAO
+    }
+
+    return {
+      auth,
+      dataSources,
       pubsub
     }
   },

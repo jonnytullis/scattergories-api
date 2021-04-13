@@ -102,18 +102,18 @@ const { createUser, generateGameId, getDefaultSettings, getRandomLetter } = requ
 //   }
 // }
 
-module.exports.newPrompts = async (_, __, { auth, pubsub, GameDAO, PromptsDAO }) => {
-  let { game } = auth.authorizeHost()
-
-  const prompts = PromptsDAO.getRandomPrompts(game.settings?.numPrompts)
-  GameDAO.setPrompts(game.id, prompts)
-  game = GameDAO.get(game.id)
-  await pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
-
-  return {
-    prompts
-  }
-}
+// module.exports.newPrompts = async (_, __, { auth, pubsub, GameDAO, PromptsDAO }) => {
+//   let { game } = auth.authorizeHost()
+//
+//   const prompts = PromptsDAO.getRandomPrompts(game.settings?.numPrompts)
+//   GameDAO.setPrompts(game.id, prompts)
+//   game = GameDAO.get(game.id)
+//   await pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
+//
+//   return {
+//     prompts
+//   }
+// }
 
 module.exports.updateSettings = async (_, { settings }, { auth, pubsub, GameDAO }) => {
   let { game } = auth.authorizeHost()

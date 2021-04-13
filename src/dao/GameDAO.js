@@ -46,22 +46,6 @@ const GameDAO = {
       resolve(data?.Item)
     })
   }),
-  // getAll: () => JSON.parse(JSON.stringify(games)),
-  // setLetter: (gameId, value) => {
-  //   const game = games.find(game => game.id === gameId)
-  //   if (game) {
-  //     game.letter = value
-  //   }
-  // },
-  // setPrompts: (gameId, value) => {
-  //   if (!Array.isArray(value)) {
-  //     throw new Error('Prompts value must be an array')
-  //   }
-  //   const game = games.find(game => game.id === gameId)
-  //   if (game) {
-  //     game.prompts = value
-  //   }
-  // },
   addPlayer: (gameId, player) => new Promise((resolve, reject) => {
     const params = {
       TableName,
@@ -125,6 +109,30 @@ const GameDAO = {
         reject(err)
       }
       resolve(data?.Attributes?.letter)
+    })
+  }),
+  updatePrompts: (gameId, prompts) => new Promise((resolve, reject) => {
+    if (!Array.isArray(prompts)) {
+      throw new Error('Prompts must be of type array')
+    }
+
+    const params = {
+      TableName,
+      Key: {
+        id: gameId
+      },
+      UpdateExpression: 'SET prompts = :prompts',
+      ExpressionAttributeValues: {
+        ':prompts': prompts
+      },
+      ReturnValued: 'UPDATED_NEW'
+    }
+
+    ddb.update(params, (err, data) => {
+      if (err) {
+        reject(err)
+      }
+      resolve(data?.Attributes?.prompts)
     })
   })
   // updateSettings: (gameId, settings) => {

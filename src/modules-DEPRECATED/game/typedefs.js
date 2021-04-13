@@ -13,18 +13,7 @@ module.exports = gql`
         user: User!
     }
     extend type Mutation {
-        newLetter: NewLetterPayload!
-        newPrompts: NewPromptsPayload!
         updateSettings(settings: SettingsInput!): Settings!
     }
-    extend type Subscription {
-    }
-    
-    ########## PAYLOADS ##########
-    type NewLetterPayload {
-        letter: String!
-    }
-    type NewPromptsPayload {
-        prompts: [String!]!
-    }
+
 `

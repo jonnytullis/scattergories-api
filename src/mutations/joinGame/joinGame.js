@@ -16,17 +16,17 @@ const typeDefs = gql`
 `
 
 const resolver = {
-  async joinGame (_, { gameId, userName }, { pubsub, GameDAO, SessionDAO }) {
+  async joinGame (_, { gameId, userName }, { pubsub, dataSources }) {
     // TODO: enforce max 20 players
-    let game = await GameDAO.getGame(gameId)
+    let game = await dataSources.GameDAO.getGame(gameId)
     if (!game) {
       throw new ValidationError(`Game ID ${gameId} does not exist`)
     }
 
     const user = createUser(userName, game.players?.length)
-    const session = await SessionDAO.createSession(user.id, game.id)
+    const session = await dataSources.SessionDAO.createSession(user.id, game.id)
     try {
-      game.players = await GameDAO.addPlayer(game.id, user)
+      game.players = await dataSources.GameDAO.addPlayer(game.id, user)
     } catch(e) {
       throw new ApolloError('Failed to join game.')
     }
