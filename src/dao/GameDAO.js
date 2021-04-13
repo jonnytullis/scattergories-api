@@ -87,7 +87,7 @@ const GameDAO = {
       resolve(data?.Attributes?.players)
     })
   }),
-  updateGameProp: (gameId, propName, value) => new Promise((resolve, reject) => {
+  updateGame: (gameId, propName, value) => new Promise((resolve, reject) => {
     if (typeof propName !== 'string' || !value) {
       throw new Error('Invalid propName or value')
     }

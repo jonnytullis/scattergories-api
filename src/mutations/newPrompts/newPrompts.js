@@ -18,7 +18,7 @@ const resolver = {
     const prompts = dataSources.PromptsDAO.getRandomPrompts(game.settings?.numPrompts)
 
     try {
-      game.prompts = await dataSources.GameDAO.updateGameProp(game.id, 'prompts', prompts)
+      game.prompts = await dataSources.GameDAO.updateGame(game.id, 'prompts', prompts)
     } catch(e) {
       throw new ApolloError('Error updating game prompts')
     }

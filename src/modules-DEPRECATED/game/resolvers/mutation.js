@@ -114,25 +114,25 @@ const { createUser, generateGameId, getDefaultSettings, getRandomLetter } = requ
 //     prompts
 //   }
 // }
-
-module.exports.updateSettings = async (_, { settings }, { auth, pubsub, GameDAO }) => {
-  let { game } = auth.authorizeHost()
-
-  if (typeof settings !== 'object') {
-    throw new UserInputError('Settings must be type object')
-  }
-
-  const { timerSeconds, numPrompts } = { ...settings }
-  if (Number(timerSeconds) < 30) {
-    throw new UserInputError('Timer length must be 30 seconds or more')
-  }
-  if (Number(numPrompts) < 1) {
-    throw new UserInputError('Number of prompts must be greater than 1')
-  }
-
-  GameDAO.updateSettings(game.id, { timerSeconds, numPrompts })
-  game = GameDAO.get(game.id)
-
-  await pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
-  return game.settings
-}
+//
+// module.exports.updateSettings = async (_, { settings }, { auth, pubsub, GameDAO }) => {
+//   let { game } = auth.authorizeHost()
+//
+//   if (typeof settings !== 'object') {
+//     throw new UserInputError('Settings must be type object')
+//   }
+//
+//   const { timerSeconds, numPrompts } = { ...settings }
+//   if (Number(timerSeconds) < 30) {
+//     throw new UserInputError('Timer length must be 30 seconds or more')
+//   }
+//   if (Number(numPrompts) < 1) {
+//     throw new UserInputError('Number of prompts must be greater than 1')
+//   }
+//
+//   GameDAO.updateSettings(game.id, { timerSeconds, numPrompts })
+//   game = GameDAO.get(game.id)
+//
+//   await pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
+//   return game.settings
+// }
