@@ -87,9 +87,9 @@ const GameDAO = {
       resolve(data?.Attributes?.players)
     })
   }),
-  updateLetter: (gameId, letter) => new Promise((resolve, reject) => {
-    if (typeof letter !== 'string') {
-      throw new Error('Letter must be of type string')
+  updateGameProp: (gameId, propName, value) => new Promise((resolve, reject) => {
+    if (typeof propName !== 'string' || !value) {
+      throw new Error('Invalid propName or value')
     }
 
     const params = {
@@ -97,9 +97,9 @@ const GameDAO = {
       Key: {
         id: gameId
       },
-      UpdateExpression: 'SET letter = :letter',
+      UpdateExpression: `SET ${propName} = :value`,
       ExpressionAttributeValues: {
-        ':letter': letter
+        ':value': value
       },
       ReturnValued: 'UPDATED_NEW'
     }
@@ -108,39 +108,9 @@ const GameDAO = {
       if (err) {
         reject(err)
       }
-      resolve(data?.Attributes?.letter)
-    })
-  }),
-  updatePrompts: (gameId, prompts) => new Promise((resolve, reject) => {
-    if (!Array.isArray(prompts)) {
-      throw new Error('Prompts must be of type array')
-    }
-
-    const params = {
-      TableName,
-      Key: {
-        id: gameId
-      },
-      UpdateExpression: 'SET prompts = :prompts',
-      ExpressionAttributeValues: {
-        ':prompts': prompts
-      },
-      ReturnValued: 'UPDATED_NEW'
-    }
-
-    ddb.update(params, (err, data) => {
-      if (err) {
-        reject(err)
-      }
-      resolve(data?.Attributes?.prompts)
+      resolve(data?.Attributes?.[propName])
     })
   })
-  // updateSettings: (gameId, settings) => {
-  //   const game = games.find(game => game.id === gameId)
-  //   if (game) {
-  //     game.settings = { ...game.settings, ...settings }
-  //   }
-  // },
 }
 
 Object.freeze(GameDAO) // Singleton
