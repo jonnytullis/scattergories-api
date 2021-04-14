@@ -1,7 +1,7 @@
 const { ApolloError } = require('apollo-server')
 
 const gql = require('../../../gql')
-const { getRandomPrompts } = require('../../helpers/promptHelpers')
+const { getRandomPrompts } = require('../../utils/prompts/prompts')
 
 const mutation = gql`
     newPrompts: NewPromptsPayload!

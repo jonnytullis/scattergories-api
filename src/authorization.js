@@ -7,10 +7,12 @@ module.exports.getAuthContext = async (sessionId) => {
   if (sessionId) {
     try {
       session = await SessionDAO.getSession(sessionId)
-      game = await GameDAO.getGame(session?.gameId)
-      user = game?.players?.find(player => player.id === session?.userId)
+      if (session?.gameId) {
+        game = await GameDAO.getGame(session?.gameId)
+        user = game?.players?.find(player => player.id === session?.userId)
+      }
     } catch(e) {
-      console.error('Error retrieving session data for sessionID:', sessionId)
+      console.error(`Error getting auth context for session id ${sessionId}:`, e)
     }
   }
 

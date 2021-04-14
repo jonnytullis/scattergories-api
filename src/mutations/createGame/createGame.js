@@ -1,8 +1,8 @@
 const { ValidationError, ApolloError } = require('apollo-server')
 
 const gql = require('../../../gql')
-const { createUser, generateGameId, getDefaultSettings, getRandomLetter } = require('../../helpers/gameHelpers')
-const { getRandomPrompts } = require('../../helpers/promptHelpers')
+const { createUser, generateGameId, getDefaultSettings, getRandomLetter } = require('../../utils/gameHelpers')
+const { getRandomPrompts } = require('../../utils/prompts/prompts')
 
 const mutation = gql`
     createGame(hostName: String!, gameName: String!): CreateGamePayload!
