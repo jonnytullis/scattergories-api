@@ -19,7 +19,6 @@ const resolver = {
       if (auth.isHost) {
         // Delete the game and data associated with the user
         await dataSources.GameDAO.deleteGame(game.id)
-        dataSources.TimerDAO.delete(game.id)
 
         // Notify anyone who is actively subscribed to the game
         const status = { gameId: game.id, message: 'Game ended by host', ended: true }
@@ -34,8 +33,11 @@ const resolver = {
 
         await dataSources.SessionDAO.deleteSession(auth.session.id)
 
-        // Get the updated game before publishing
-        await pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
+        const status = {
+          gameId: game.id,
+          message: `${user.name} left the game`
+        }
+        await pubsub.publish('GAME_UPDATED', { gameUpdated: { game, status } })
       }
     } catch(e) {
       console.error('Error leaving game:', e)

@@ -48,12 +48,7 @@ const resolver = {
           // This means that the timer in the database was set to { isRunning: false } which happens when paused or reset
           clearInterval(interval)
         } else {
-          const status = {
-            gameId: game.id,
-            ended: false,
-            message: 'Something went wrong with the timer...'
-          }
-          await pubsub.publish('GAME_UPDATED', { gameUpdated: { status } })
+          throw new ApolloError('Error with the timer')
         }
       }
     }
