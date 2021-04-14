@@ -16,8 +16,8 @@ const resolver = {
   async startTimer (_, __, { auth, pubsub, dataSources }) {
     const { game } = auth.authorizeHost()
 
-    if (!game.timer) {
-      throw new ApolloError(`Error starting timer for game: ${game.id}`)
+    if (!game?.timer) {
+      throw new ApolloError(`Error locating timer for game: ${game.id}`)
     }
 
     game.timer.isRunning = true
@@ -39,11 +39,13 @@ const resolver = {
           game.timer = await dataSources.GameDAO.decrementRunningTimer(game.id)
         } else {
           clearInterval(interval)
+          game.timer.isRunning = false
+          await dataSources.GameDAO.updateGame(game.id, 'timer', game.timer)
         }
         pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
       } catch(e) {
         if (e.code === 'ConditionalCheckFailedException') {
-          // This means that the timer in the database was set to { isRunning: false } which happens when paused
+          // This means that the timer in the database was set to { isRunning: false } which happens when paused or reset
           clearInterval(interval)
         } else {
           const status = {

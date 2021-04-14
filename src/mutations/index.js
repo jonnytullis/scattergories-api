@@ -4,6 +4,7 @@ const leaveGame = require('./leaveGame/leaveGame')
 const newLetter = require('./newLetter/newLetter')
 const newPrompts = require('./newPrompts/newPrompts')
 const pauseTimer = require('./pauseTimer/pauseTimer')
+const resetTimer = require('./resetTimer/resetTimer')
 const startTimer = require('./startTimer/startTimer')
 const updateSettings = require('./updateSettings/updateSettings')
 
@@ -15,6 +16,7 @@ module.exports = {
     ...newLetter.resolver,
     ...newPrompts.resolver,
     ...pauseTimer.resolver,
+    ...resetTimer.resolver,
     ...startTimer.resolver,
     ...updateSettings.resolver
   },
@@ -25,6 +27,7 @@ module.exports = {
     ${newLetter.typeDefs}
     ${newPrompts.typeDefs}
     ${pauseTimer.typeDefs}
+    ${resetTimer.typeDefs}
     ${startTimer.typeDefs}
     ${updateSettings.typeDefs}
   `,
@@ -36,6 +39,7 @@ module.exports = {
       ${newLetter.mutation}
       ${newPrompts.mutation}
       ${pauseTimer.mutation}
+      ${resetTimer.mutation}
       ${startTimer.mutation}
       ${updateSettings.mutation}
     }

@@ -1,19 +1,20 @@
 const { ApolloError } = require('apollo-server')
 
 const gql = require('../../../gql')
+const { getDefaultSettings } = require('../../utils/gameHelpers')
 
 const mutation = gql`
-    pauseTimer: PauseTimerPayload!
+    resetTimer: ResetTimerPayload!
 `
 
 const typeDefs = gql`
-    type PauseTimerPayload {
+    type ResetTimerPayload {
         success: Boolean
     }
 `
 
 const resolver = {
-  async pauseTimer (_, __, { auth, pubsub, dataSources }) {
+  async resetTimer (_, __, { auth, pubsub, dataSources }) {
     const { game } = auth.authorizeHost()
 
     if (!game?.timer) {
@@ -22,10 +23,11 @@ const resolver = {
 
     try {
       game.timer.isRunning = false
+      game.timer.seconds = game.settings?.timerSeconds || getDefaultSettings().timerSeconds
       await dataSources.GameDAO.updateGame(game.id, 'timer', game.timer)
       pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
     } catch(e) {
-      throw new ApolloError('Error pausing timer')
+      throw new ApolloError('Error resetting timer')
     }
 
     return {
