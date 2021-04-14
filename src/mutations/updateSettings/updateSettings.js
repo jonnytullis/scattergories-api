@@ -3,7 +3,7 @@ const { ApolloError, ValidationError } = require('apollo-server')
 const gql = require('../../../gql')
 
 const mutation = gql`
-    updateSettings(settings: SettingsInput!): Settings!
+    updateSettings(settings: SettingsInput!): UpdateSettingsPayload!
 `
 
 const typeDefs = gql`
@@ -31,9 +31,9 @@ const resolver = {
       }
 
       try {
-        game.settings = await dataSources.updateGame(game.id, 'settings', {
-          timerSeconds,
-          numPrompts
+        game.settings = await dataSources.GameDAO.updateGame(game.id, 'settings', {
+          timerSeconds: timerSeconds || game.settings.timerSeconds,
+          numPrompts: numPrompts || game.settings.numPrompts,
         })
       } catch(e) {
         throw new ApolloError('Error updating settings')
