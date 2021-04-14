@@ -4,7 +4,7 @@ const queries = require('./queries')
 const mutations = require('./mutations')
 const subscriptions = require('./subscriptions')
 const types = require('./types')
-const { GameDAO, SessionDAO, TimerDAO } = require('./dao')
+const { GameDAO, SessionDAO } = require('./dao')
 const { getAuthContext } = require('./authorization')
 
 // These are placeholders that get extended in each module typedef
@@ -46,8 +46,7 @@ module.exports = {
 
     const dataSources = {
       SessionDAO,
-      GameDAO,
-      TimerDAO
+      GameDAO
     }
 
     return {

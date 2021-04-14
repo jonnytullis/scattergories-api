@@ -4,8 +4,6 @@ const query = gql`
     user: User!
 `
 
-const typeDefs = ''
-
 const resolver = {
   async user (_, __, { auth }) {
     const { user } = auth.authorizeUser()
@@ -15,6 +13,6 @@ const resolver = {
 
 module.exports = {
   query,
-  typeDefs,
+  typeDefs: '',
   resolver
 }

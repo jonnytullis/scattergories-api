@@ -9,6 +9,7 @@ module.exports = gql`
         letter: String
         prompts: [String!]!
         settings: Settings!
+        timer: Timer
     }
     
     type User {
@@ -20,5 +21,10 @@ module.exports = gql`
     type Settings {
         timerSeconds: Int!
         numPrompts: Int!
+    }
+
+    type Timer {
+        seconds: Int!
+        isRunning: Boolean!
     }
 `

@@ -24,6 +24,13 @@ module.exports.createUser = function (name, numPlayers = 0) {
   }
 }
 
+module.exports.createTimer = function (seconds = module.exports.getDefaultSettings().timerSeconds) {
+  return {
+    seconds,
+    isRunning: false
+  }
+}
+
 module.exports.generateGameId = () => {
   return Math.random().toString(36).slice(2, 8).toUpperCase()
 }

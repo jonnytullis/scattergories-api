@@ -1,7 +1,7 @@
 const { ValidationError, ApolloError } = require('apollo-server')
 
 const gql = require('../../../gql')
-const { createUser, generateGameId, getDefaultSettings, getRandomLetter } = require('../../utils/gameHelpers')
+const { createUser, generateGameId, getDefaultSettings, getRandomLetter, createTimer } = require('../../utils/gameHelpers')
 const { getRandomPrompts } = require('../../utils/prompts/prompts')
 
 const mutation = gql`
@@ -22,19 +22,19 @@ const resolver = {
       throw new ValidationError('"hostName" and "gameName" are required')
     }
 
+    const settings = getDefaultSettings()
     const host = createUser(hostName, 0)
-    const gameId = generateGameId()
+
     const game = {
-      id: gameId,
+      id: generateGameId(),
       name: gameName || `${host.name}'s Game`,
       hostId: host.id,
       players: [ host ],
       letter: getRandomLetter(),
-      prompts: [],
-      settings: getDefaultSettings()
+      prompts: getRandomPrompts(settings.numPrompts),
+      settings,
+      timer: createTimer(settings.timerSeconds)
     }
-
-    game.prompts = getRandomPrompts(game.settings.numPrompts)
 
     let session
     try {
@@ -43,8 +43,6 @@ const resolver = {
     } catch(e) {
       throw new ApolloError('Failed to create game.')
     }
-
-    dataSources.TimerDAO.add(game.id, game.settings.timerSeconds)
 
     return {
       gameId: game.id,

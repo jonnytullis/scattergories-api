@@ -110,6 +110,29 @@ const GameDAO = {
       }
       resolve(data?.Attributes?.[propName])
     })
+  }),
+  // Only decrements the timer if it is running
+  decrementRunningTimer: gameId => new Promise((resolve, reject) => {
+    const params = {
+      TableName,
+      Key: {
+        id: gameId
+      },
+      UpdateExpression: `SET timer.seconds = timer.seconds - :num`,
+      ConditionExpression: 'timer.isRunning = :isRunning',
+      ExpressionAttributeValues: {
+        ':num': 1,
+        ':isRunning': true
+      },
+      ReturnValues: 'ALL_NEW'
+    }
+
+    ddb.update(params, (err, data) => {
+      if (err) {
+        reject(err)
+      }
+      resolve(data?.Attributes?.timer)
+    })
   })
 }
 
