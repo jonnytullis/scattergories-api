@@ -29,14 +29,16 @@ const resolvers = {
 const pubsub = new PubSub()
 
 module.exports = {
-  context: async ({ req, connection }) => {
+  context: async ({ req, connection, payload }) => {
     // req is sent with queries and mutations, payload is sent with websocket subscriptions.
     //    Either way, we need to get the current session ID
     let sessionId
     if (req) {
       sessionId = req.headers.authorization?.split(' ')?.[1]
     } else if (connection) {
-      sessionId = connection.context?.authorization?.split(' ')?.[1]
+      // connection context for graphql playground, payload for react app
+      const authString = connection.context?.authorization || payload?.authorization
+      sessionId = authString?.split(' ')?.[1]
     }
 
     // Get the auth context resources

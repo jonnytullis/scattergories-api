@@ -6,7 +6,7 @@ const GameDAO = {
   putGame: item => new Promise((resolve, reject) => {
     const params = {
       TableName,
-      Item: item
+      Item: { ...item, timestamp: new Date().toISOString() }
     }
 
     ddb.put(params, (err) => {

@@ -31,7 +31,7 @@ const resolver = {
       players: [ host ],
       letter: getRandomLetter(),
       prompts: [],
-      settings: getDefaultSettings(),
+      settings: getDefaultSettings()
     }
 
     game.prompts = getRandomPrompts(game.settings.numPrompts)

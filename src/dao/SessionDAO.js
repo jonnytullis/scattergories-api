@@ -15,7 +15,8 @@ const SessionDAO = {
     const session = {
       id: generateSessionId(),
       userId,
-      gameId
+      gameId,
+      timestamp: new Date().toISOString()
     }
 
     const params = {
