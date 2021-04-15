@@ -22,7 +22,11 @@ const resolver = {
 
     try {
       game.timer.isRunning = false
-      await dataSources.GameDAO.updateGame(game.id, 'timer', game.timer)
+      game.prompts.hidden = true
+      await Promise.all([
+        dataSources.GameDAO.updateGame(game.id, 'timer', game.timer),
+        dataSources.GameDAO.updateGame(game.id, 'prompts', game.prompts)
+      ])
       pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
     } catch(e) {
       throw new ApolloError('Error pausing timer')

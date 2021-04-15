@@ -3,19 +3,18 @@ const gql = require('../gql')
 module.exports = gql`
     type Game {
         id: String! # Intentionally NOT ID because game ID will always be a 6 letter string
-        name: String
+        name: String!
         hostId: ID!
         players: [User!]!
-        letter: String
-        prompts: [String!]!
+        letter: String!
+        prompts: Prompts!
         settings: Settings!
-        timer: Timer
+        timer: Timer!
     }
     
-    type User {
-        id: ID!
-        name: String! # display name
-        color: String!
+    type Prompts {
+        hidden: Boolean!
+        list: [String!]!
     }
     
     type Settings {
@@ -26,5 +25,11 @@ module.exports = gql`
     type Timer {
         seconds: Int!
         isRunning: Boolean!
+    }
+
+    type User {
+        id: ID!
+        name: String! # display name
+        color: String!
     }
 `

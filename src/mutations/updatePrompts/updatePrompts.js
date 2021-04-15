@@ -4,19 +4,22 @@ const gql = require('../../../gql')
 const { getRandomPrompts } = require('../../utils/prompts/prompts')
 
 const mutation = gql`
-    newPrompts: NewPromptsPayload!
+    updatePrompts(newPrompts: Boolean!, hidden: Boolean): UpdatePromptsPayload!
 `
 
 const typeDefs = gql`
-    type NewPromptsPayload {
-        prompts: [String!]!
+    type UpdatePromptsPayload {
+        prompts: Prompts
     }
 `
 
 const resolver = {
-  async newPrompts (_, __, { auth, pubsub, dataSources }) {
+  async updatePrompts (_, { newPrompts, hidden }, { auth, pubsub, dataSources }) {
     let { game } = auth.authorizeHost()
-    const prompts = getRandomPrompts(game.settings?.numPrompts)
+    const prompts = {
+      hidden: hidden === undefined ? game.prompts.hidden : hidden,
+      list: newPrompts ? getRandomPrompts(game.settings?.numPrompts) : game.prompts.list
+    }
 
     try {
       game.prompts = await dataSources.GameDAO.updateGame(game.id, 'prompts', prompts)

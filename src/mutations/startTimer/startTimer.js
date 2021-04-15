@@ -21,8 +21,12 @@ const resolver = {
     }
 
     game.timer.isRunning = true
+    game.prompts.hidden = false
     try {
-      await dataSources.GameDAO.updateGame(game.id, 'timer', game.timer)
+      await Promise.all([
+        dataSources.GameDAO.updateGame(game.id, 'timer', game.timer),
+        dataSources.GameDAO.updateGame(game.id, 'prompts', game.prompts)
+      ])
     } catch(e) {
       throw new ApolloError('Error starting timer')
     }

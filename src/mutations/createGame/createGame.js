@@ -31,7 +31,10 @@ const resolver = {
       hostId: host.id,
       players: [ host ],
       letter: getRandomLetter(),
-      prompts: getRandomPrompts(settings.numPrompts),
+      prompts: {
+        hidden: true,
+        list: getRandomPrompts(settings.numPrompts)
+      },
       settings,
       timer: createTimer(settings.timerSeconds)
     }

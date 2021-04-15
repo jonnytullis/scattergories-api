@@ -2,7 +2,7 @@ const createGame = require('./createGame/createGame')
 const joinGame = require('./joinGame/joinGame')
 const leaveGame = require('./leaveGame/leaveGame')
 const newLetter = require('./newLetter/newLetter')
-const newPrompts = require('./newPrompts/newPrompts')
+const updatePrompts = require('./updatePrompts/updatePrompts')
 const pauseTimer = require('./pauseTimer/pauseTimer')
 const resetTimer = require('./resetTimer/resetTimer')
 const startTimer = require('./startTimer/startTimer')
@@ -14,7 +14,7 @@ module.exports = {
     ...joinGame.resolver,
     ...leaveGame.resolver,
     ...newLetter.resolver,
-    ...newPrompts.resolver,
+    ...updatePrompts.resolver,
     ...pauseTimer.resolver,
     ...resetTimer.resolver,
     ...startTimer.resolver,
@@ -25,7 +25,7 @@ module.exports = {
     ${joinGame.typeDefs}
     ${leaveGame.typeDefs}
     ${newLetter.typeDefs}
-    ${newPrompts.typeDefs}
+    ${updatePrompts.typeDefs}
     ${pauseTimer.typeDefs}
     ${resetTimer.typeDefs}
     ${startTimer.typeDefs}
@@ -37,7 +37,7 @@ module.exports = {
       ${joinGame.mutation}
       ${leaveGame.mutation}
       ${newLetter.mutation}
-      ${newPrompts.mutation}
+      ${updatePrompts.mutation}
       ${pauseTimer.mutation}
       ${resetTimer.mutation}
       ${startTimer.mutation}
