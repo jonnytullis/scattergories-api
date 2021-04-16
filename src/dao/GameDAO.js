@@ -87,28 +87,36 @@ const GameDAO = {
       resolve(data?.Attributes?.players)
     })
   }),
-  updateGame: (gameId, propName, value) => new Promise((resolve, reject) => {
-    if (typeof propName !== 'string' || !value) {
-      throw new Error('Invalid propName or value')
+  updateGame: (gameId, data) => new Promise((resolve, reject) => {
+    if (typeof data !== 'object') {
+      throw new Error('Invalid propsObj')
     }
+
+    const keys = Object.keys(data)
+
+    let UpdateExpression = 'SET '
+    let ExpressionAttributeValues = {}
+    for (const key of keys) {
+      UpdateExpression += `${key} = :${key},`
+      ExpressionAttributeValues[`:${key}`] = data[key]
+    }
+    UpdateExpression = UpdateExpression.slice(0, -1) // Remove trailing comma
 
     const params = {
       TableName,
       Key: {
         id: gameId
       },
-      UpdateExpression: `SET ${propName} = :value`,
-      ExpressionAttributeValues: {
-        ':value': value
-      },
-      ReturnValues: 'UPDATED_NEW'
+      UpdateExpression,
+      ExpressionAttributeValues,
+      ReturnValues: 'ALL_NEW'
     }
 
     ddb.update(params, (err, data) => {
       if (err) {
         reject(err)
       }
-      resolve(data?.Attributes?.[propName])
+      resolve(data?.Attributes)
     })
   }),
   // Only decrements the timer if it is running

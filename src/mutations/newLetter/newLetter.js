@@ -15,14 +15,15 @@ const typeDefs = gql`
 
 const resolver = {
   async newLetter (_, __, { auth, pubsub, dataSources }) {
-    const { game } = auth.authorizeHost()
+    let { game } = auth.authorizeHost()
+
+    let letter = getRandomLetter()
+    while (letter === game.letter) {
+      letter = getRandomLetter()
+    }
 
     try {
-      let letter = getRandomLetter()
-      while (letter === game.letter) {
-        letter = getRandomLetter()
-      }
-      game.letter = await dataSources.GameDAO.updateGame(game.id, 'letter', letter)
+      game = await dataSources.GameDAO.updateGame(game.id, { letter })
     } catch(e) {
       throw new ApolloError('Error updating letter')
     }

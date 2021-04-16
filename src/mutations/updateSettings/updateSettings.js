@@ -1,6 +1,7 @@
 const { ApolloError, ValidationError } = require('apollo-server')
 
 const gql = require('../../../gql')
+const { getRandomPrompts } = require('../../utils/prompts/prompts')
 
 const mutation = gql`
     updateSettings(settings: SettingsInput!): UpdateSettingsPayload!
@@ -30,17 +31,28 @@ const resolver = {
         throw new ValidationError('Number of prompts must be greater than 1')
       }
 
+      game.settings = {
+        timerSeconds: timerSeconds || game.settings.timerSeconds,
+        numPrompts: numPrompts || game.settings.numPrompts,
+      }
+      game.prompts.list = [
+        ...game.prompts.list,
+        ...getRandomPrompts(game.settings.numPrompts)
+      ].slice(0, game.settings.numPrompts)
+      game.timer.seconds = game.settings.timerSeconds
+
       try {
-        game.settings = await dataSources.GameDAO.updateGame(game.id, 'settings', {
-          timerSeconds: timerSeconds || game.settings.timerSeconds,
-          numPrompts: numPrompts || game.settings.numPrompts,
+        game = await dataSources.GameDAO.updateGame(game.id, {
+          settings: game.settings,
+          timer: game.timer,
+          prompts: game.prompts
         })
       } catch(e) {
         throw new ApolloError('Error updating settings')
       }
-
-      await pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
     }
+
+    await pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
 
     return {
       settings: game.settings

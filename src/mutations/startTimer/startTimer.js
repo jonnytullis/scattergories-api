@@ -14,7 +14,7 @@ const typeDefs = gql`
 
 const resolver = {
   async startTimer (_, __, { auth, pubsub, dataSources }) {
-    const { game } = auth.authorizeHost()
+    let { game } = auth.authorizeHost()
 
     if (!game?.timer) {
       throw new ApolloError(`Error locating timer for game: ${game.id}`)
@@ -22,11 +22,12 @@ const resolver = {
 
     game.timer.isRunning = true
     game.prompts.hidden = false
+
     try {
-      await Promise.all([
-        dataSources.GameDAO.updateGame(game.id, 'timer', game.timer),
-        dataSources.GameDAO.updateGame(game.id, 'prompts', game.prompts)
-      ])
+      game = await dataSources.GameDAO.updateGame(game.id, {
+        timer: game.timer,
+        prompts: game.prompts
+      })
     } catch(e) {
       throw new ApolloError('Error starting timer')
     }
@@ -44,7 +45,9 @@ const resolver = {
         } else {
           clearInterval(interval)
           game.timer.isRunning = false
-          await dataSources.GameDAO.updateGame(game.id, 'timer', game.timer)
+          await dataSources.GameDAO.updateGame(game.id, {
+            timer: game.timer
+          })
         }
         pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
       } catch(e) {
