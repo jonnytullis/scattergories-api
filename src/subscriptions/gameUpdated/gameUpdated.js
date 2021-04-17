@@ -1,6 +1,7 @@
 const { withFilter } = require('apollo-server')
 
 const gql = require('../../../gql')
+const leaveGame = require('../../mutations/leaveGame/leaveGame')
 
 const subscription = gql`
     gameUpdated(gameId: ID!): GameUpdatedResponse!
@@ -19,35 +20,75 @@ const typeDefs = gql`
 `
 
 /** Adds ability to specify what the subscription does when it is canceled by the client **/
-// function asyncIteratorWithCancel(asyncIterator, onCancel) {
-//   const asyncReturn = asyncIterator.return
-//
-//   asyncIterator.return = () => {
-//     onCancel()
-//     return asyncReturn ? asyncReturn.call(asyncIterator) : Promise.resolve({ value: undefined, done: true })
-//   }
-//
-//   return asyncIterator
-// }
+function asyncIteratorWithCancel(asyncIterator, onCancel) {
+  const asyncReturn = asyncIterator.return
+
+  asyncIterator.return = () => {
+    onCancel()
+    return asyncReturn ? asyncReturn.call(asyncIterator) : Promise.resolve({ value: undefined, done: true })
+  }
+
+  return asyncIterator
+}
+
+async function isPlayerActive({ gameId, userId, GameDAO }) {
+  const game = await GameDAO.getGame(gameId)
+  const user = game?.players?.find(player => player.id === userId)
+  return user?.isActive
+}
+
+async function setPlayerActive(isActive, { gameId, userId, GameDAO }) {
+  const game = await GameDAO.getGame(gameId)
+  const index = game?.players?.findIndex(player => player.id === userId)
+  if (index >= 0) {
+    game.players[index].isActive = isActive
+    await GameDAO.updateGame(game.id, { players: game.players })
+  }
+}
 
 const resolver = {
   gameUpdated: {
-    subscribe: withFilter((_, __, { auth, pubsub }) => {
-      const { game } = auth.authorizeUser()
+    subscribe: withFilter((_, __, { auth, pubsub, dataSources }) => {
+      const { game, user } = auth.authorizeUser()
 
-      // In case the user is pending leave
-      // pendingInactiveUserCallbacks.userId = undefined
+      const context = {
+        gameId: game.id,
+        userId: user.id,
+        GameDAO: dataSources.GameDAO
+      }
+
+      const removePlayerIfRemainsInactive = async (milliseconds) => {
+        setTimeout(async () => {
+          const isActive = await isPlayerActive(context)
+          if (isActive === false) { // If undefined, the game doesn't exist anymore
+            try {
+              await leaveGame.resolver.leaveGame(null, null, { auth, pubsub, dataSources })
+            } catch(e) {
+              console.error('Error removing inactive player from game.', e)
+            }
+          }
+        }, milliseconds)
+      }
+
+      /** Subscription Logic **/
+      setPlayerActive(true, context).catch(e => {
+        console.error('Error setting player as active in subscription', e)
+      })
 
       // Publish the game right away (setTimeout for nextTick)
       setTimeout(() => {
         pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
       }, 0)
 
-      // return asyncIteratorWithCancel(pubsub.asyncIterator([ 'GAME_UPDATED' ]), () => {
-      //   onSubscriptionCancel({ gameId: game.id, userId: user.id }, { pubsub, GameDAO })
-      // })
-
-      return pubsub.asyncIterator([ 'GAME_UPDATED' ])
+      return asyncIteratorWithCancel(pubsub.asyncIterator([ 'GAME_UPDATED' ]), () => {
+        // This is to ensure that if a player refreshes their page, they'll be re-admitted to the game, but if they
+        //      close their browser or navigate away, they'll be removed from the game automatically.
+        setPlayerActive(false, context).then(async () => {
+          await removePlayerIfRemainsInactive(5000)
+        }).catch(e => {
+          console.error('Error performing pending player removal.', e)
+        })
+      })
     },
     (payload, variables) => {
       return payload?.gameUpdated?.game?.id === variables?.gameId ||
@@ -55,26 +96,6 @@ const resolver = {
     })
   }
 }
-
-// If a client subscription becomes inactive, they will be removed from the game
-//    if they remain inactive for a certain amount of time. This allows users to
-//    refresh the browser window, but if they leave the page, they'll be removed
-//    from the game.
-// const pendingInactiveUserCallbacks = {} // key: userId, value: function
-// function onSubscriptionCancel({ gameId, userId }, { GameDAO }) {
-//   const game = GameDAO.get(gameId)
-//   if (game && game.players?.some((item) => item.id === userId)) {
-//     pendingInactiveUserCallbacks.userId = () => {
-//       // leaveGame(undefined, { gameId, userId }, { pubsub, GameDAO })
-//     }
-//     setTimeout(() => {
-//       if (typeof pendingInactiveUserCallbacks.userId === 'function') {
-//         pendingInactiveUserCallbacks.userId()
-//         delete pendingInactiveUserCallbacks.userId
-//       }
-//     }, 5000)
-//   }
-// }
 
 module.exports = {
   subscription,
