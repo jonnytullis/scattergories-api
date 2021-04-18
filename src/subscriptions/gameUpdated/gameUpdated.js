@@ -31,64 +31,33 @@ function asyncIteratorWithCancel(asyncIterator, onCancel) {
   return asyncIterator
 }
 
-async function isPlayerActive({ gameId, userId, GameDAO }) {
-  const game = await GameDAO.getGame(gameId)
-  const user = game?.players?.find(player => player.id === userId)
-  return user?.isActive
-}
-
-async function setPlayerActive(isActive, { gameId, userId, GameDAO }) {
-  const game = await GameDAO.getGame(gameId)
-  const index = game?.players?.findIndex(player => player.id === userId)
-  if (index >= 0) {
-    game.players[index].isActive = isActive
-    await GameDAO.updateGame(game.id, { players: game.players })
-  }
-}
-
 const resolver = {
   gameUpdated: {
-    subscribe: withFilter((_, __, { auth, pubsub, dataSources }) => {
+    subscribe: withFilter((_, __, context) => {
+      const { auth, pubsub, dataSources } = context
       const { game, user } = auth.authorizeUser()
-
-      const context = {
-        gameId: game.id,
-        userId: user.id,
-        GameDAO: dataSources.GameDAO
-      }
-
-      const removePlayerIfRemainsInactive = async (milliseconds) => {
-        setTimeout(async () => {
-          const isActive = await isPlayerActive(context)
-          if (isActive === false) { // If undefined, the game doesn't exist anymore
-            try {
-              await leaveGame.resolver.leaveGame(null, null, { auth, pubsub, dataSources })
-            } catch(e) {
-              console.error('Error removing inactive player from game.', e)
-            }
-          }
-        }, milliseconds)
-      }
-
-      /** Subscription Logic **/
-      setPlayerActive(true, context).catch(e => {
-        console.error('Error setting player as active in subscription', e)
-      })
 
       // Publish the game right away (setTimeout for nextTick)
       setTimeout(() => {
         pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
       }, 0)
 
-      return asyncIteratorWithCancel(pubsub.asyncIterator([ 'GAME_UPDATED' ]), () => {
-        // This is to ensure that if a player refreshes their page, they'll be re-admitted to the game, but if they
-        //      close their browser or navigate away, they'll be removed from the game automatically.
-        setPlayerActive(false, context).then(async () => {
-          await removePlayerIfRemainsInactive(5000)
-        }).catch(e => {
-          console.error('Error performing pending player removal.', e)
-        })
-      })
+      async function onSubscriptionClose() {
+        try {
+          const updatedGame = await dataSources.GameDAO.getGame(game.id)
+          const updatedUser = updatedGame?.players?.find(player => player.id === user.id)
+          if (updatedUser) { // If the game and user still exist, call the leaveGame mutation
+            const res = await leaveGame.resolver.leaveGame(null, null, context)
+            if (!res.success) {
+              console.error('Error leaving game on subscription cancel')
+            }
+          }
+        } catch(e) {
+          console.error('Error in onSubscriptionClose:', e)
+        }
+      }
+
+      return asyncIteratorWithCancel(pubsub.asyncIterator([ 'GAME_UPDATED' ]), onSubscriptionClose)
     },
     (payload, variables) => {
       return payload?.gameUpdated?.game?.id === variables?.gameId ||
