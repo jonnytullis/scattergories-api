@@ -1,4 +1,5 @@
-const { DynamoDB: ddb } = require('./DynamoDB')
+const AWS = require('aws-sdk')
+const ddb = new AWS.DynamoDB.DocumentClient()
 
 const TableName = process.env.NODE_ENV === 'development' ? 'scattergories-game-dev' : 'scattergories-game-prd'
 

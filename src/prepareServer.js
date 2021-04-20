@@ -1,4 +1,12 @@
-const { PubSub, gql } = require('apollo-server')
+const { gql } = require('apollo-server')
+const { GooglePubSub } = require('@axelspringer/graphql-google-pubsub')
+const AWS = require('aws-sdk')
+
+// Global AWS configuration
+AWS.config.update({
+  region: 'us-west-2',
+  retryDelayOptions: { base: 300 }
+})
 
 const queries = require('./queries')
 const mutations = require('./mutations')
@@ -26,7 +34,43 @@ const resolvers = {
   Subscription: { ...subscriptions.resolvers }
 }
 
-const pubsub = new PubSub()
+function getGoogleCredentials() {
+  const ssm = new AWS.SSM()
+  return new Promise((resolve, reject) => (
+    ssm.getParameter({
+      Name: 'scattergories-api-credentials-google',
+      WithDecryption: true
+    }, (err, data) => {
+      if (err) {
+        reject('Unable to retrieve Google credentials from SSM.\n' + err)
+      }
+      const credentials = JSON.parse(data.Parameter.Value)
+      resolve(credentials)
+    })
+  ))
+}
+
+async function getPubSubOptions() {
+  const credentials = await getGoogleCredentials()
+  const options = {
+    projectId: credentials.project_id,
+    credentials: {
+      client_email: credentials.client_email,
+      private_key: credentials.private_key
+    }
+  }
+  const topic2SubName = topicName => `${topicName}-scattergories-api-${process.env.NODE_ENV === 'development' ? 'dev' : 'prd'}`
+  const commonMessageHandler = ({ data }) => {
+    return JSON.parse(data.toString())
+  }
+  return { options, topic2SubName, commonMessageHandler }
+}
+
+let pubsub
+getPubSubOptions().then(result => {
+  const { options, topic2SubName, commonMessageHandler } = result
+  pubsub = new GooglePubSub(options, topic2SubName, commonMessageHandler)
+})
 
 module.exports = {
   context: async ({ req, connection, payload }) => {

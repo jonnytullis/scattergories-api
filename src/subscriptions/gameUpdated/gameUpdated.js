@@ -1,4 +1,4 @@
-const { withFilter } = require('apollo-server')
+const { withFilter } = require('graphql-subscriptions')
 
 const gql = require('../../../gql')
 const leaveGame = require('../../mutations/leaveGame/leaveGame')
