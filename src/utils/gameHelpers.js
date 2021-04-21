@@ -1,7 +1,4 @@
-
-function generateUserId () {
-  return Math.random().toString(36).slice(2)
-}
+const { v4: uuid } = require('uuid')
 
 const colors = [
   '#c70039',
@@ -18,7 +15,7 @@ const colors = [
 
 module.exports.createUser = function (name, numPlayers = 0) {
   return {
-    id: generateUserId(),
+    id: uuid(),
     name: name,
     color: colors[numPlayers % colors.length] // Cycle through avatar colors
   }
@@ -39,6 +36,13 @@ module.exports.getDefaultSettings = () => ({
   timerSeconds: 180,
   numPrompts: 12
 })
+
+module.exports.getDynamoTTL = () => {
+  const today = new Date()
+  const tomorrow = new Date()
+  tomorrow.setDate(today.getDate() + 1) // Data will live for one day in DynamoDB
+  return Math.round(tomorrow.getTime() / 1000) // Unix timestamp
+}
 
 module.exports.getRandomLetter = () => {
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
