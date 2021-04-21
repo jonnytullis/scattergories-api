@@ -42,7 +42,7 @@ function getGoogleCredentials() {
       WithDecryption: true
     }, (err, data) => {
       if (err) {
-        reject('Unable to retrieve Google credentials from SSM.\n' + err)
+        reject('Unable to retrieve Google credentials from SSM. ' + err.message)
       }
       const credentials = JSON.parse(data.Parameter.Value)
       resolve(credentials)
