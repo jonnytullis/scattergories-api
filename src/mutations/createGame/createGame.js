@@ -36,8 +36,7 @@ const resolver = {
         list: getRandomPrompts(settings.numPrompts)
       },
       settings,
-      timer: createTimer(settings.timerSeconds),
-      timestamp: new Date().toISOString() // Internal use only
+      timer: createTimer(settings.timerSeconds)
     }
 
     let session

@@ -1,5 +1,3 @@
-const { gql } = require('apollo-server')
-const { GooglePubSub } = require('@axelspringer/graphql-google-pubsub')
 const AWS = require('aws-sdk')
 
 // Global AWS configuration
@@ -7,6 +5,9 @@ AWS.config.update({
   region: 'us-west-2',
   retryDelayOptions: { base: 300 }
 })
+
+const { gql } = require('apollo-server')
+const { GooglePubSub } = require('@axelspringer/graphql-google-pubsub')
 
 const queries = require('./queries')
 const mutations = require('./mutations')

@@ -1,23 +1,19 @@
 const AWS = require('aws-sdk')
+const { v4: uuid } = require('uuid')
+const { getUpdatedTTL } = require('../utils/gameHelpers')
+
 const ddb = new AWS.DynamoDB.DocumentClient()
 
 const TableName = process.env.NODE_ENV === 'development' ? 'scattergories-session-dev' : 'scattergories-session-prd'
 const GameIdIndex = 'gameId-userId-index'
 
-function generateSessionId() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    let r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8)
-    return v.toString(16)
-  })
-}
-
 const SessionDAO = {
   createSession: (userId, gameId) => new Promise((resolve, reject) => {
     const session = {
-      id: generateSessionId(),
+      id: uuid(),
       userId,
       gameId,
-      timestamp: new Date().toISOString()
+      ttl: getUpdatedTTL()
     }
 
     const params = {
