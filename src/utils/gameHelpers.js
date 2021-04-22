@@ -35,7 +35,7 @@ module.exports.getDefaultSettings = () => ({
   numPrompts: 12
 })
 
-module.exports.getDynamoTTL = () => {
+module.exports.getUpdatedTTL = () => {
   const today = new Date()
   const tomorrow = new Date()
   tomorrow.setDate(today.getDate() + 1) // Data will live for one day in DynamoDB

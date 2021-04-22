@@ -1,5 +1,5 @@
 const AWS = require('aws-sdk')
-const { getDynamoTTL } = require('../utils/gameHelpers')
+const { getUpdatedTTL } = require('../utils/gameHelpers')
 
 const ddb = new AWS.DynamoDB.DocumentClient()
 const TableName = process.env.NODE_ENV === 'development' ? 'scattergories-game-dev' : 'scattergories-game-prd'
@@ -8,7 +8,7 @@ const GameDAO = {
   putGame: item => new Promise((resolve, reject) => {
     const params = {
       TableName,
-      Item: { ...item, ttl: getDynamoTTL() }
+      Item: { ...item, ttl: getUpdatedTTL() }
     }
 
     ddb.put(params, (err) => {

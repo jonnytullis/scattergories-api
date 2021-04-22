@@ -1,6 +1,6 @@
 const AWS = require('aws-sdk')
 const { v4: uuid } = require('uuid')
-const { getDynamoTTL } = require('../utils/gameHelpers')
+const { getUpdatedTTL } = require('../utils/gameHelpers')
 
 const ddb = new AWS.DynamoDB.DocumentClient()
 
@@ -13,7 +13,7 @@ const SessionDAO = {
       id: uuid(),
       userId,
       gameId,
-      ttl: getDynamoTTL()
+      ttl: getUpdatedTTL()
     }
 
     const params = {
