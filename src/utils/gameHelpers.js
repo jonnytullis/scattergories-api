@@ -1,5 +1,3 @@
-const { v4: uuid } = require('uuid')
-
 const colors = [
   '#c70039',
   '#11698e',
@@ -15,7 +13,7 @@ const colors = [
 
 module.exports.createUser = function (name, numPlayers = 0) {
   return {
-    id: uuid(),
+    id: Math.random().toString(36).slice(2, 8).toUpperCase(),
     name: name,
     color: colors[numPlayers % colors.length] // Cycle through avatar colors
   }
