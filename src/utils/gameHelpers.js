@@ -26,10 +26,6 @@ module.exports.createTimer = function (seconds = module.exports.getDefaultSettin
   }
 }
 
-module.exports.generateGameId = () => {
-  return Math.random().toString(36).slice(2, 8).toUpperCase()
-}
-
 module.exports.getDefaultSettings = () => ({
   timerSeconds: 180,
   numPrompts: 12

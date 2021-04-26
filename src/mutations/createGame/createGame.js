@@ -1,7 +1,7 @@
 const { ValidationError, ApolloError } = require('apollo-server')
 
 const gql = require('../../../gql')
-const { createUser, generateGameId, getDefaultSettings, getRandomLetter, createTimer } = require('../../utils/gameHelpers')
+const { createUser, getDefaultSettings, getRandomLetter, createTimer } = require('../../utils/gameHelpers')
 const { getRandomPrompts } = require('../../utils/prompts/prompts')
 
 const mutation = gql`
@@ -25,8 +25,25 @@ const resolver = {
     const settings = getDefaultSettings()
     const host = createUser(hostName, 0)
 
+    async function getUniqueGameId() {
+      let gameId
+      while (!gameId) {
+        try {
+          gameId = Math.random().toString(36).slice(2, 8).toUpperCase()
+          const game = await dataSources.GameDAO.getGame(gameId)
+          if (game) {
+            // A game already has that ID
+            gameId = undefined
+          }
+        } catch(e) {
+          throw new ApolloError('Could not verify unique Game ID')
+        }
+      }
+      return gameId
+    }
+
     const game = {
-      id: generateGameId(),
+      id: await getUniqueGameId(),
       name: gameName || `${host.name}'s Game`,
       hostId: host.id,
       players: [ host ],
