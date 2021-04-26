@@ -18,16 +18,16 @@
   "license": "ISC",
   "dependencies": {
     "@axelspringer/graphql-google-pubsub": "^2.1.0",
-    "apollo-server": "^2.22.2",
-    "aws-sdk": "^2.879.0",
+    "apollo-server": "^2.23.0",
+    "aws-sdk": "^2.893.0",
     "graphql": "^15.5.0",
     "graphql-subscriptions": "^1.2.1",
     "nodemon": "^2.0.7",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "apollo-server-testing": "^2.22.2",
-    "eslint": "^7.19.0",
+    "apollo-server-testing": "^2.23.0",
+    "eslint": "^7.25.0",
     "jest": "^26.6.3",
     "pre-commit": "^1.2.2"
   }
