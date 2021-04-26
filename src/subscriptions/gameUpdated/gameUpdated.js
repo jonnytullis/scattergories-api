@@ -27,13 +27,20 @@ const resolver = {
       // Publish the game right away (setTimeout for nextTick)
       setTimeout(() => {
         pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
-      }, 5000) // Wait one second for google pubsub to sync
+      }, 0)
 
       return pubsub.asyncIterator([ 'GAME_UPDATED' ])
     },
     (payload, variables) => {
-      return payload?.gameUpdated?.game?.id === variables?.gameId ||
+      const isValid = payload?.gameUpdated?.game?.id === variables?.gameId ||
         payload?.gameUpdated?.status?.gameId === variables?.gameId
+
+      // FIXME remove this
+      if (!isValid) {
+        console.log('Filtered subscription:', payload, variables)
+      }
+
+      return isValid
     })
   }
 }
