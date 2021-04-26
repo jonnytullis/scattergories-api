@@ -27,7 +27,7 @@ const resolver = {
       // Publish the game right away (setTimeout for nextTick)
       setTimeout(() => {
         pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
-      }, 0)
+      }, 1000) // Wait one second for google pubsub to sync
 
       return pubsub.asyncIterator([ 'GAME_UPDATED' ])
     },
