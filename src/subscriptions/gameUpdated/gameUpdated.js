@@ -29,6 +29,9 @@ const resolver = {
         pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
       }, 0)
 
+      // FIXME remove this
+      console.log('REACHED Subscription resolver:', auth.sessionId)
+
       return pubsub.asyncIterator([ 'GAME_UPDATED' ])
     },
     (payload, variables) => {
