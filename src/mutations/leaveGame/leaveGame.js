@@ -12,7 +12,7 @@ const typeDefs = gql`
 
 const resolver = {
   async leaveGame (_, __, { auth, pubsub, dataSources }) {
-    let { game, user } = auth.authorizeUser()
+    const { game, user } = auth.authorizeUser()
     let success = true
 
     try {
@@ -29,7 +29,7 @@ const resolver = {
       } else {
         // Delete data associated with the user
         const playerIndex = game.players?.findIndex(item => item.id === user.id)
-        game.players = await dataSources.GameDAO.removePlayer(game.id, playerIndex)
+        let gameUpdate = { players: await dataSources.GameDAO.removePlayer(game.id, playerIndex) }
 
         await dataSources.SessionDAO.deleteSession(auth.session.id)
 
@@ -37,7 +37,7 @@ const resolver = {
           gameId: game.id,
           message: `${user.name} left the game`
         }
-        await pubsub.publish('GAME_UPDATED', { gameUpdated: { game, status } })
+        await pubsub.publish('GAME_UPDATED', { gameUpdated: { gameUpdate, status } })
       }
     } catch(e) {
       console.error('Error leaving game:', e)

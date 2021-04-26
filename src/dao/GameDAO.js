@@ -111,7 +111,7 @@ const GameDAO = {
       },
       UpdateExpression,
       ExpressionAttributeValues,
-      ReturnValues: 'ALL_NEW'
+      ReturnValues: 'UPDATED_NEW'
     }
 
     ddb.update(params, (err, data) => {

@@ -20,8 +20,9 @@ const typeDefs = gql`
 
 const resolver = {
   async updateSettings (_, { settings }, { auth, pubsub, dataSources }) {
-    let { game } = auth.authorizeHost()
+    const { game } = auth.authorizeHost()
 
+    let gameUpdate
     if (settings) {
       const { timerSeconds, numPrompts } = { ...settings }
       if (Number(timerSeconds) < 30) {
@@ -42,7 +43,7 @@ const resolver = {
       game.timer.seconds = game.settings.timerSeconds
 
       try {
-        game = await dataSources.GameDAO.updateGame(game.id, {
+        gameUpdate = await dataSources.GameDAO.updateGame(game.id, {
           settings: game.settings,
           timer: game.timer,
           prompts: game.prompts
@@ -53,7 +54,7 @@ const resolver = {
       }
     }
 
-    await pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
+    await pubsub.publish('GAME_UPDATED', { gameUpdated: { gameUpdate } })
 
     return {
       settings: game.settings

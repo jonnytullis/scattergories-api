@@ -15,20 +15,21 @@ const typeDefs = gql`
 
 const resolver = {
   async updatePrompts (_, { newPrompts, hidden }, { auth, pubsub, dataSources }) {
-    let { game } = auth.authorizeHost()
+    const { game } = auth.authorizeHost()
     const prompts = {
       hidden: hidden === undefined ? game.prompts.hidden : hidden,
       list: newPrompts ? getRandomPrompts(game.settings?.numPrompts) : game.prompts.list
     }
 
+    let gameUpdate
     try {
-      game = await dataSources.GameDAO.updateGame(game.id, { prompts })
+      gameUpdate = await dataSources.GameDAO.updateGame(game.id, { prompts })
     } catch(e) {
       console.error(e)
       throw new ApolloError('Error updating game prompts')
     }
 
-    await pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
+    await pubsub.publish('GAME_UPDATED', { gameUpdated: { gameUpdate } })
 
     return {
       prompts

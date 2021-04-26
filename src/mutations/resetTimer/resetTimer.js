@@ -15,7 +15,7 @@ const typeDefs = gql`
 
 const resolver = {
   async resetTimer (_, __, { auth, pubsub, dataSources }) {
-    let { game } = auth.authorizeHost()
+    const { game } = auth.authorizeHost()
 
     if (!game?.timer) {
       throw new ApolloError(`Error locating timer for game: ${game.id}`)
@@ -24,8 +24,9 @@ const resolver = {
     game.timer.isRunning = false
     game.timer.seconds = game.settings?.timerSeconds || getDefaultSettings().timerSeconds
 
+    let gameUpdate
     try {
-      game = await dataSources.GameDAO.updateGame(game.id, {
+      gameUpdate = await dataSources.GameDAO.updateGame(game.id, {
         timer: game.timer
       })
     } catch(e) {
@@ -33,7 +34,7 @@ const resolver = {
       throw new ApolloError('Error resetting timer')
     }
 
-    pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
+    pubsub.publish('GAME_UPDATED', { gameUpdated: { gameUpdate } })
 
     return {
       success: true

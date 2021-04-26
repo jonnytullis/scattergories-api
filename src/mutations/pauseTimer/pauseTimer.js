@@ -14,7 +14,7 @@ const typeDefs = gql`
 
 const resolver = {
   async pauseTimer (_, __, { auth, pubsub, dataSources }) {
-    let { game } = auth.authorizeHost()
+    const { game } = auth.authorizeHost()
 
     if (!game?.timer) {
       throw new ApolloError(`Error locating timer for game: ${game.id}`)
@@ -23,8 +23,9 @@ const resolver = {
     game.timer.isRunning = false
     game.prompts.hidden = true
 
+    let gameUpdate
     try {
-      game = await dataSources.GameDAO.updateGame(game.id, {
+      gameUpdate = await dataSources.GameDAO.updateGame(game.id, {
         timer: game.timer,
         prompts: game.prompts
       })
@@ -33,7 +34,7 @@ const resolver = {
       throw new ApolloError('Error pausing timer')
     }
 
-    pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
+    pubsub.publish('GAME_UPDATED', { gameUpdated: { gameUpdate } })
 
     return {
       success: true

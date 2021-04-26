@@ -8,8 +8,15 @@ const subscription = gql`
 
 const typeDefs = gql`
     type GameUpdatedResponse {
-        game: Game
+        gameUpdate: GameUpdate
         status: Status
+    }
+    type GameUpdate {
+        players: [User!]
+        letter: String
+        prompts: Prompts
+        settings: Settings
+        timer: Timer
     }
     type Status {
         gameId: ID!
@@ -22,12 +29,7 @@ const resolver = {
   gameUpdated: {
     subscribe: withFilter((_, __, context) => {
       const { auth, pubsub } = context
-      const { game } = auth.authorizeUser()
-
-      // Publish the game right away (setTimeout for nextTick)
-      setTimeout(() => {
-        pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
-      }, 1000)
+      auth.authorizeUser()
 
       return pubsub.asyncIterator([ 'GAME_UPDATED' ])
     },
