@@ -27,7 +27,7 @@ const resolver = {
       // Publish the game right away (setTimeout for nextTick)
       setTimeout(() => {
         pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
-      }, 0)
+      }, 5000)
 
       // FIXME remove this
       console.log('REACHED Subscription resolver:', auth.sessionId)
