@@ -29,6 +29,7 @@ const resolver = {
         timer: game.timer
       })
     } catch(e) {
+      console.error(e)
       throw new ApolloError('Error resetting timer')
     }
 

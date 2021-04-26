@@ -36,6 +36,7 @@ const resolver = {
             gameId = undefined
           }
         } catch(e) {
+          console.error(e)
           throw new ApolloError('Could not verify unique Game ID')
         }
       }
@@ -61,6 +62,7 @@ const resolver = {
       await dataSources.GameDAO.putGame(game)
       session = await dataSources.SessionDAO.createSession(host.id, game.id)
     } catch(e) {
+      console.error(e)
       throw new ApolloError('Failed to create game.')
     }
 

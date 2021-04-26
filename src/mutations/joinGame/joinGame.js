@@ -28,6 +28,7 @@ const resolver = {
     try {
       game.players = await dataSources.GameDAO.addPlayer(game.id, user)
     } catch(e) {
+      console.error(e)
       throw new ApolloError('Failed to join game.')
     }
 

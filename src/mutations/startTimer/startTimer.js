@@ -29,6 +29,7 @@ const resolver = {
         prompts: game.prompts
       })
     } catch(e) {
+      console.error(e)
       throw new ApolloError('Error starting timer')
     }
 
@@ -55,6 +56,7 @@ const resolver = {
           // This means that the timer in the database was set to { isRunning: false } which happens when paused or reset
           clearInterval(interval)
         } else {
+          console.error(e)
           throw new ApolloError('Error with the timer')
         }
       }

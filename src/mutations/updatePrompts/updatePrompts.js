@@ -24,6 +24,7 @@ const resolver = {
     try {
       game = await dataSources.GameDAO.updateGame(game.id, { prompts })
     } catch(e) {
+      console.error(e)
       throw new ApolloError('Error updating game prompts')
     }
 

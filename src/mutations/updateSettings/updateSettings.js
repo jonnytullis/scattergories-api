@@ -48,6 +48,7 @@ const resolver = {
           prompts: game.prompts
         })
       } catch(e) {
+        console.error(e)
         throw new ApolloError('Error updating settings')
       }
     }

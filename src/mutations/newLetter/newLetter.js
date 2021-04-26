@@ -25,6 +25,7 @@ const resolver = {
     try {
       game = await dataSources.GameDAO.updateGame(game.id, { letter })
     } catch(e) {
+      console.error(e)
       throw new ApolloError('Error updating letter')
     }
 
