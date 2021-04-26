@@ -31,7 +31,12 @@ const resolver = {
       throw new ApolloError('Failed to join game.')
     }
 
-    pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
+    const status = {
+      gameId: game.id,
+      message: `${userName} joined the game`
+    }
+
+    pubsub.publish('GAME_UPDATED', { gameUpdated: { game, status } })
 
     return {
       gameId: game.id,
