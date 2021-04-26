@@ -33,8 +33,6 @@ const resolver = {
       return pubsub.asyncIterator([ 'GAME_UPDATED' ])
     },
     (payload, variables) => {
-      console.log('FILTER:', payload)
-      console.log('FILTER-2:', variables)
       return payload?.gameUpdated?.gameId === variables?.gameId
     })
   }
