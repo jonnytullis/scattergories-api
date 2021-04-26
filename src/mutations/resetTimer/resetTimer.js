@@ -24,9 +24,9 @@ const resolver = {
     game.timer.isRunning = false
     game.timer.seconds = game.settings?.timerSeconds || getDefaultSettings().timerSeconds
 
-    let gameUpdate
+    let updates
     try {
-      gameUpdate = await dataSources.GameDAO.updateGame(game.id, {
+      updates = await dataSources.GameDAO.updateGame(game.id, {
         timer: game.timer
       })
     } catch(e) {
@@ -34,7 +34,7 @@ const resolver = {
       throw new ApolloError('Error resetting timer')
     }
 
-    pubsub.publish('GAME_UPDATED', { gameUpdated: { gameUpdate } })
+    pubsub.publish('GAME_UPDATED', { gameUpdated: { updates, gameId: game.id } })
 
     return {
       success: true

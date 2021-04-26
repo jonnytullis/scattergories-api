@@ -23,9 +23,9 @@ const resolver = {
     game.timer.isRunning = true
     game.prompts.hidden = false
 
-    let gameUpdate
+    let updates
     try {
-      gameUpdate = await dataSources.GameDAO.updateGame(game.id, {
+      updates = await dataSources.GameDAO.updateGame(game.id, {
         timer: game.timer,
         prompts: game.prompts
       })
@@ -42,16 +42,16 @@ const resolver = {
 
     async function decrementTimer () {
       try {
-        if (gameUpdate.timer.seconds > 0) {
-          gameUpdate.timer = await dataSources.GameDAO.decrementRunningTimer(game.id)
+        if (updates.timer.seconds > 0) {
+          updates.timer = await dataSources.GameDAO.decrementRunningTimer(game.id)
         } else {
           clearInterval(interval)
-          gameUpdate.timer.isRunning = false
+          updates.timer.isRunning = false
           await dataSources.GameDAO.updateGame(game.id, {
-            timer: gameUpdate.timer
+            timer: updates.timer
           })
         }
-        pubsub.publish('GAME_UPDATED', { gameUpdated: { gameUpdate } })
+        pubsub.publish('GAME_UPDATED', { gameUpdated: { updates, gameId: game.id } })
       } catch(e) {
         if (e.code === 'ConditionalCheckFailedException') {
           // This means that the timer in the database was set to { isRunning: false } which happens when paused or reset

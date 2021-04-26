@@ -29,7 +29,7 @@ const resolver = {
       } else {
         // Delete data associated with the user
         const playerIndex = game.players?.findIndex(item => item.id === user.id)
-        let gameUpdate = { players: await dataSources.GameDAO.removePlayer(game.id, playerIndex) }
+        let updates = { players: await dataSources.GameDAO.removePlayer(game.id, playerIndex) }
 
         await dataSources.SessionDAO.deleteSession(auth.session.id)
 
@@ -37,7 +37,7 @@ const resolver = {
           gameId: game.id,
           message: `${user.name} left the game`
         }
-        await pubsub.publish('GAME_UPDATED', { gameUpdated: { gameUpdate, status } })
+        await pubsub.publish('GAME_UPDATED', { gameUpdated: { updates, status, gameId: game.id } })
       }
     } catch(e) {
       console.error('Error leaving game:', e)

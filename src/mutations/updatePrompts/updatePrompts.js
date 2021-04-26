@@ -21,15 +21,15 @@ const resolver = {
       list: newPrompts ? getRandomPrompts(game.settings?.numPrompts) : game.prompts.list
     }
 
-    let gameUpdate
+    let updates
     try {
-      gameUpdate = await dataSources.GameDAO.updateGame(game.id, { prompts })
+      updates = await dataSources.GameDAO.updateGame(game.id, { prompts })
     } catch(e) {
       console.error(e)
       throw new ApolloError('Error updating game prompts')
     }
 
-    await pubsub.publish('GAME_UPDATED', { gameUpdated: { gameUpdate } })
+    await pubsub.publish('GAME_UPDATED', { gameUpdated: { updates, gameId: game.id } })
 
     return {
       prompts

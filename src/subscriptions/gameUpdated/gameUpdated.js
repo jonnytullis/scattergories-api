@@ -8,10 +8,10 @@ const subscription = gql`
 
 const typeDefs = gql`
     type GameUpdatedResponse {
-        gameUpdate: GameUpdate
+        updates: GameUpdates
         status: Status
     }
-    type GameUpdate {
+    type GameUpdates {
         players: [User!]
         letter: String
         prompts: Prompts
@@ -30,12 +30,12 @@ const resolver = {
     subscribe: withFilter((_, __, context) => {
       const { auth, pubsub } = context
       auth.authorizeUser()
-
       return pubsub.asyncIterator([ 'GAME_UPDATED' ])
     },
     (payload, variables) => {
-      return payload?.gameUpdated?.game?.id === variables?.gameId ||
-        payload?.gameUpdated?.status?.gameId === variables?.gameId
+      console.log('FILTER:', payload)
+      console.log('FILTER-2:', variables)
+      return payload?.gameUpdated?.gameId === variables?.gameId
     })
   }
 }

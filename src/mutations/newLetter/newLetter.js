@@ -22,15 +22,15 @@ const resolver = {
       letter = getRandomLetter()
     }
 
-    let gameUpdate
+    let updates
     try {
-      gameUpdate = await dataSources.GameDAO.updateGame(game.id, { letter })
+      updates = await dataSources.GameDAO.updateGame(game.id, { letter })
     } catch(e) {
       console.error(e)
       throw new ApolloError('Error updating letter')
     }
 
-    await pubsub.publish('GAME_UPDATED', { gameUpdated: { gameUpdate } })
+    pubsub.publish('GAME_UPDATED', { gameUpdated: { updates, gameId: game.id } })
 
     return {
       letter: game.letter

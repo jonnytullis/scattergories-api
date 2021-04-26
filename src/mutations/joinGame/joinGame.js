@@ -25,9 +25,9 @@ const resolver = {
 
     const user = createUser(userName, game.players?.length)
     const session = await dataSources.SessionDAO.createSession(user.id, game.id)
-    let gameUpdate
+    let updates
     try {
-      gameUpdate = { players: await dataSources.GameDAO.addPlayer(game.id, user) }
+      updates = { players: await dataSources.GameDAO.addPlayer(game.id, user) }
     } catch(e) {
       console.error(e)
       throw new ApolloError('Failed to join game.')
@@ -38,7 +38,7 @@ const resolver = {
       message: `${userName} joined the game`
     }
 
-    pubsub.publish('GAME_UPDATED', { gameUpdated: { gameUpdate, status } })
+    pubsub.publish('GAME_UPDATED', { gameUpdated: { updates, status, gameId: game.id } })
 
     return {
       gameId: game.id,

@@ -75,6 +75,11 @@ async function getGooglePubsub() {
   return new GooglePubSub(options, topic2SubName, commonMessageHandler)
 }
 
+let pubsub
+getGooglePubsub().then(googlePubSub => {
+  pubsub = googlePubSub
+})
+
 module.exports = {
   context: async ({ req, connection, payload }) => {
     // req is sent with queries and mutations, payload is sent with websocket subscriptions.
@@ -95,8 +100,6 @@ module.exports = {
       SessionDAO,
       GameDAO
     }
-
-    const pubsub = await getGooglePubsub()
 
     return {
       auth,
