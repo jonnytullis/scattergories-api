@@ -53,7 +53,10 @@ function getGoogleCredentials() {
 
 async function getPubSubOptions() {
   const credentials = await getGoogleCredentials()
+
+  const dayInSeconds = 60 * 60 * 24
   const options = {
+    messageRetentionDuration: { seconds: dayInSeconds },
     projectId: credentials.project_id,
     credentials: {
       client_email: credentials.client_email,
@@ -67,11 +70,10 @@ async function getPubSubOptions() {
   return { options, topic2SubName, commonMessageHandler }
 }
 
-let pubsub
-getPubSubOptions().then(result => {
-  const { options, topic2SubName, commonMessageHandler } = result
-  pubsub = new GooglePubSub(options, topic2SubName, commonMessageHandler)
-})
+async function getGooglePubsub() {
+  const { options, topic2SubName, commonMessageHandler } = await getPubSubOptions()
+  return new GooglePubSub(options, topic2SubName, commonMessageHandler)
+}
 
 module.exports = {
   context: async ({ req, connection, payload }) => {
@@ -93,6 +95,8 @@ module.exports = {
       SessionDAO,
       GameDAO
     }
+
+    const pubsub = await getGooglePubsub()
 
     return {
       auth,

@@ -27,23 +27,13 @@ const resolver = {
       // Publish the game right away (setTimeout for nextTick)
       setTimeout(() => {
         pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
-      }, 5000)
-
-      // FIXME remove this
-      console.log('REACHED Subscription resolver:', auth.sessionId)
+      }, 1000)
 
       return pubsub.asyncIterator([ 'GAME_UPDATED' ])
     },
     (payload, variables) => {
-      const isValid = payload?.gameUpdated?.game?.id === variables?.gameId ||
+      return payload?.gameUpdated?.game?.id === variables?.gameId ||
         payload?.gameUpdated?.status?.gameId === variables?.gameId
-
-      // FIXME remove this
-      if (!isValid) {
-        console.log('Filtered subscription:', payload, variables)
-      }
-
-      return isValid
     })
   }
 }
