@@ -32,12 +32,7 @@ const resolver = {
       auth.authorizeUser()
       return pubsub.asyncIterator([ 'GAME_UPDATED' ])
     },
-    (payload, variables) => {
-      // Return a promise so GooglePubSub actually works
-      return new Promise(resolve => {
-        resolve(payload?.gameUpdated?.gameId === variables?.gameId)
-      })
-    })
+    (payload, variables) => payload?.gameUpdated?.gameId === variables?.gameId)
   }
 }
 

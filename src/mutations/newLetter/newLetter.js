@@ -33,7 +33,7 @@ const resolver = {
     pubsub.publish('GAME_UPDATED', { gameUpdated: { updates, gameId: game.id } })
 
     return {
-      letter: game.letter
+      letter: updates.letter
     }
   }
 }

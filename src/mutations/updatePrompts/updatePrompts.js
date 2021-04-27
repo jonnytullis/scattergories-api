@@ -32,7 +32,7 @@ const resolver = {
     await pubsub.publish('GAME_UPDATED', { gameUpdated: { updates, gameId: game.id } })
 
     return {
-      prompts
+      prompts: updates.prompts
     }
   }
 }
