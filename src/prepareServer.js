@@ -63,7 +63,16 @@ async function getPubSubOptions() {
       private_key: credentials.private_key
     }
   }
-  const topic2SubName = topicName => `${topicName}-scattergories-api-${process.env.NODE_ENV === 'development' ? 'dev' : 'prd'}`
+  function getTopicEnv() {
+    if (process.env.NODE_ENV === 'development') {
+      if (process.env.LOCAL === 'true') {
+        return 'local'
+      }
+      return 'dev'
+    }
+    return 'prd'
+  }
+  const topic2SubName = topicName => `${topicName}-scattergories-api-${getTopicEnv()}`
   const commonMessageHandler = ({ data }) => {
     return JSON.parse(data.toString())
   }
