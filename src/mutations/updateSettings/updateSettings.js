@@ -20,8 +20,9 @@ const typeDefs = gql`
 
 const resolver = {
   async updateSettings (_, { settings }, { auth, pubsub, dataSources }) {
-    let { game } = auth.authorizeHost()
+    const { game } = auth.authorizeHost()
 
+    let updates
     if (settings) {
       const { timerSeconds, numPrompts } = { ...settings }
       if (Number(timerSeconds) < 30) {
@@ -42,17 +43,18 @@ const resolver = {
       game.timer.seconds = game.settings.timerSeconds
 
       try {
-        game = await dataSources.GameDAO.updateGame(game.id, {
+        updates = await dataSources.GameDAO.updateGame(game.id, {
           settings: game.settings,
           timer: game.timer,
           prompts: game.prompts
         })
       } catch(e) {
+        console.error(e)
         throw new ApolloError('Error updating settings')
       }
     }
 
-    await pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
+    await pubsub.publish('GAME_UPDATED', { gameUpdated: { updates, gameId: game.id } })
 
     return {
       settings: game.settings

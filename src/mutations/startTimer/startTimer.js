@@ -14,7 +14,7 @@ const typeDefs = gql`
 
 const resolver = {
   async startTimer (_, __, { auth, pubsub, dataSources }) {
-    let { game } = auth.authorizeHost()
+    const { game } = auth.authorizeHost()
 
     if (!game?.timer) {
       throw new ApolloError(`Error locating timer for game: ${game.id}`)
@@ -23,12 +23,14 @@ const resolver = {
     game.timer.isRunning = true
     game.prompts.hidden = false
 
+    let updates
     try {
-      game = await dataSources.GameDAO.updateGame(game.id, {
+      updates = await dataSources.GameDAO.updateGame(game.id, {
         timer: game.timer,
         prompts: game.prompts
       })
     } catch(e) {
+      console.error(e)
       throw new ApolloError('Error starting timer')
     }
 
@@ -40,21 +42,22 @@ const resolver = {
 
     async function decrementTimer () {
       try {
-        if (game.timer.seconds > 0) {
-          game.timer = await dataSources.GameDAO.decrementRunningTimer(game.id)
+        if (updates.timer.seconds > 0) {
+          updates.timer = await dataSources.GameDAO.decrementRunningTimer(game.id)
         } else {
           clearInterval(interval)
-          game.timer.isRunning = false
+          updates.timer.isRunning = false
           await dataSources.GameDAO.updateGame(game.id, {
-            timer: game.timer
+            timer: updates.timer
           })
         }
-        pubsub.publish('GAME_UPDATED', { gameUpdated: { game } })
+        pubsub.publish('GAME_UPDATED', { gameUpdated: { updates, gameId: game.id } })
       } catch(e) {
         if (e.code === 'ConditionalCheckFailedException') {
           // This means that the timer in the database was set to { isRunning: false } which happens when paused or reset
           clearInterval(interval)
         } else {
+          console.error(e)
           throw new ApolloError('Error with the timer')
         }
       }

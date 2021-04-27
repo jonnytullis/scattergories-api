@@ -13,7 +13,7 @@ const colors = [
 
 module.exports.createUser = function (name, numPlayers = 0) {
   return {
-    id: Math.random().toString(36).slice(2, 8).toUpperCase(),
+    id: Math.random().toString(36).slice(2),
     name: name,
     color: colors[numPlayers % colors.length] // Cycle through avatar colors
   }
@@ -24,10 +24,6 @@ module.exports.createTimer = function (seconds = module.exports.getDefaultSettin
     seconds,
     isRunning: false
   }
-}
-
-module.exports.generateGameId = () => {
-  return Math.random().toString(36).slice(2, 8).toUpperCase()
 }
 
 module.exports.getDefaultSettings = () => ({

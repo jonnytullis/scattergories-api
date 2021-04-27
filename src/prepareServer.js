@@ -53,24 +53,40 @@ function getGoogleCredentials() {
 
 async function getPubSubOptions() {
   const credentials = await getGoogleCredentials()
+
+  const dayInSeconds = 60 * 60 * 24
   const options = {
+    messageRetentionDuration: { seconds: dayInSeconds },
     projectId: credentials.project_id,
     credentials: {
       client_email: credentials.client_email,
       private_key: credentials.private_key
     }
   }
-  const topic2SubName = topicName => `${topicName}-scattergories-api-${process.env.NODE_ENV === 'development' ? 'dev' : 'prd'}`
+  function getTopicEnv() {
+    if (process.env.NODE_ENV === 'development') {
+      if (process.env.LOCAL === 'true') {
+        return 'local'
+      }
+      return 'dev'
+    }
+    return 'prd'
+  }
+  const topic2SubName = topicName => `${topicName}-scattergories-api-${getTopicEnv()}`
   const commonMessageHandler = ({ data }) => {
     return JSON.parse(data.toString())
   }
   return { options, topic2SubName, commonMessageHandler }
 }
 
+async function getGooglePubsub() {
+  const { options, topic2SubName, commonMessageHandler } = await getPubSubOptions()
+  return new GooglePubSub(options, topic2SubName, commonMessageHandler)
+}
+
 let pubsub
-getPubSubOptions().then(result => {
-  const { options, topic2SubName, commonMessageHandler } = result
-  pubsub = new GooglePubSub(options, topic2SubName, commonMessageHandler)
+getGooglePubsub().then(googlePubSub => {
+  pubsub = googlePubSub
 })
 
 module.exports = {
